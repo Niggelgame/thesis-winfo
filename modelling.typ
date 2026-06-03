@@ -158,4 +158,7 @@ As with the previous two processing stations, it also contains Pick (@pick-aiqs-
 
 The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory owner.
 
-During modelling, we will focus on the control interactions between the modules and the AGV management.
+During modelling, we will focus on the control interactions between the modules and the AGV management. This is *implicit* control. There is no control transition token to be found in the MQTT logs, the control can just be inferred from the interactions between the modules. 
+This means that the CCU steps will not be present in the prediction tokens. However, they are crucial for validation or potential synthetic generation of runs.
+
+To understand the CCU's role, we can look a the different CCU steps in a typical run. On a newly arriving piece, the CCU needs to instruct the modules to put it into the HBW.
