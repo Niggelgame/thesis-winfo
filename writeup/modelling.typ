@@ -158,7 +158,31 @@ As with the previous two processing stations, it also contains Pick (@pick-aiqs-
 
 The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory owner.
 
-During modelling, we will focus on the control interactions between the modules and the AGV management. This is *implicit* control. There is no control transition token to be found in the MQTT logs, the control can just be inferred from the interactions between the modules. 
-This means that the CCU steps will not be present in the prediction tokens. However, they are crucial for validation or potential synthetic generation of runs.
+Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, is *implicit* or *invisble* control. There is no control transition token to be found in the MQTT logs, the control can just be inferred from the interactions between the modules. 
+This means that the CCU steps will not be present in the prediction tokens. 
 
-To understand the CCU's role, we can look a the different CCU steps in a typical run. On a newly arriving piece, the CCU needs to instruct the modules to put it into the HBW.
+For a potential synthetic generation of runs modelling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed. This would imply pre-modelling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. 
+
+#include "figures/direct_connect_drill_mill.typ"
+
+This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* with increases in configurations and length of runs. As these control steps are not to be found within the logs, all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
+
+We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all parts of a singular workpiece are always only present in one module action, these actions don't need to be able to run concurrently. 
+
+#include "figures/implicit_connect_drill_mill.typ"
+
+Technically, this restriction is applied by creating a global place called `Next Module Ready`. Whenever a module wants to start, it needs to consume this place, whenever it is finished, it will fill the place again. Following the example from before, this creates the new steps in @implicit-connect-drill-mill. 
+
+This new design does not directly solve the issue of these control steps missing in the logs, but provides a simple solution. By composing $"DRILL Dropped" circle.small "Implicit DRILL end"$ and $"Implicit MILL start" circle.small "MILL Pick"$ it essentially just changes the interfaces of the module steps to have the `Next Module Ready` place instead of their respective `Start` and `Finish` places. These newly composed models can be then again composed directly via the `Next Module Ready`. As we know that before and after all module actions their steps will need their one matching `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
+
+For example, if the logs contain the steps
+
+`DRILL Dropped` #h(112pt) $arrow$ #h(118pt) `MILL Pick`
+
+we can instead interpret this as 
+
+`DRILL Dropped` $arrow$ `Implicit DRILL end` $arrow$ `Implicit MILL start` $arrow$ `MILL Pick`
+
+as the implicit steps can be directly inferred.
+
+At this point, one might wonder why we have not directly put the `Next Module Ready` step into the module steps. The reason for this decision is that we can keep the level of detail on the module basis, while essentially just having an interface wrapper to simplify implementation details later.
