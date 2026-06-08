@@ -29,7 +29,7 @@ class TrainConfig:
     num_layers: int = 2 # number of stacked transformer encoder layers
     dim_feedforward: int = 128 # what the dimension the FF-Network has after each transformer layer
     grad_clip: float = 1.0 # what kind of norm maximum of parameters should be
-    patience: int = 5 # during cross validation, how many attempts at bettering should be done
+    patience: int = 8 # during cross validation, how many attempts at bettering should be done
     k_folds: int = 4 # how many k fold splits
     seed: int = 42 # randomness seed
 
@@ -176,9 +176,9 @@ def one_epoch(
 
 # build search space for model parameters
 def build_search_space() -> List[Dict[str, Any]]:
-    d_models = [32, 64]
-    layers = [2, 3]
-    dropouts = [0.2, 0.3]
+    d_models = [18, 32]
+    layers = [1, 2]
+    dropouts = [0.1, 0.2]
     learning_rates = [3e-3, 1e-3]
 
     configs: List[Dict[str, Any]] = []

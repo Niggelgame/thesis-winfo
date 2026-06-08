@@ -31,6 +31,7 @@ class RejectReason(Enum):
     DUPLICATE_STATE = "DUPLICATE_STATE"
     DUPLICATE_ACTION = "DUPLICATE_ACTION"
     BEFORE_FIRST_ORDER = "BEFORE_FIRST_ORDER"
+    DPS_ORDER_NO_COLOR = "DPS_ORDER_NO_COLOR"
 
 
 # Layout-derived mapping from serial number to stable device type.
@@ -284,7 +285,12 @@ class DPSEvent:
             if command not in DPSEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
 
-            token = f"{DPSEvent.module} {DPSEvent.commands[command]["RUNNING"]}"
+            # DPS also contains color from metadata
+            color = action.get("metadata", {}).get("workpiece", {}).get("type", None)
+            if color == None:
+                return RejectReason.DPS_ORDER_NO_COLOR
+
+            token = f"{DPSEvent.module} {color} {DPSEvent.commands[command]["RUNNING"]}"
 
             return ShadowEvent(
                 module=DPSEvent.module,
@@ -300,7 +306,7 @@ class DPSEvent:
             actionState = payload.get("actionState")
             if actionState is None:
                 return RejectReason.INVALID_PAYLOAD
-            
+
             active_command = actionState.get("command", "")
             if active_command not in DPSEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
@@ -389,7 +395,7 @@ class DrillEvent:
             actionState = payload.get("actionState")
             if actionState is None:
                 return RejectReason.INVALID_PAYLOAD
-            
+
             active_command = actionState.get("command", "")
             if active_command not in DrillEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
@@ -479,7 +485,7 @@ class MillEvent:
             actionState = payload.get("actionState")
             if actionState is None:
                 return RejectReason.INVALID_PAYLOAD
-            
+
             active_command = actionState.get("command", "")
             if active_command not in MillEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
@@ -492,8 +498,6 @@ class MillEvent:
 
             if state == "RUNNING" and IGNORE_RUNNING_STATE:
                 return RejectReason.RUNNING_STATE_IGNORED
-
-            
 
             token = f"{MillEvent.module} {MillEvent.commands[active_command][state]}"
 
@@ -566,7 +570,7 @@ class HBWEvent:
             active_command = actionState.get("command", "")
             if active_command not in HBWEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
-            
+
             state = actionState.get("state", "")
             if state not in HBWEvent.commands[active_command].keys():
                 return RejectReason.INVALID_PAYLOAD
@@ -575,7 +579,6 @@ class HBWEvent:
 
             if state == "RUNNING" and IGNORE_RUNNING_STATE:
                 return RejectReason.RUNNING_STATE_IGNORED
-
 
             token = f"{HBWEvent.module} {HBWEvent.commands[active_command][state]}"
 
@@ -818,10 +821,14 @@ vocab_steps = [
     "HBW Drop",
     "HBW Dropped",
     "HBW Drop Failed",
-    "DPS Pick",
+    "DPS RED Pick",
+    "DPS RED Drop",
+    "DPS WHITE Pick",
+    "DPS WHITE Drop",
+    "DPS BLUE Pick",
+    "DPS BLUE Drop",
     "DPS Picked",
     "DPS Pick Failed",
-    "DPS Drop",
     "DPS Dropped",
     "DPS Drop Failed",
     "DRILL Pick",
