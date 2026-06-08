@@ -26,4 +26,4 @@ This script will also give some information about the events collected within th
 
 Now the data is ready be parsed by our preprocessor. The preprocessor will find relevant events for our prediction model and convert it to tokens corresponding to the Heraklit transitions. 
 
-Take a look at [the ML-Model Readme](../ml-model/README.md) next.
+Take a look at [the ML-Model Readme](../ml_model/README.md) next.

@@ -79,33 +79,37 @@ def cmd_train(args: argparse.Namespace) -> None:
     print(f"Saved model artifacts to {args.artifacts_dir}")
 
 
-def cmd_predict(args: argparse.Namespace) -> None:
-    device = select_device(args.device, args.force_cpu)
-    model_path = Path(args.artifacts_dir) / "model.pt"
-    model, vocab, idx_to_value, _cfg = load_artifacts(model_path, device=device)
+def predict_wrap(artifacts_dir, device, force_cpu, events, steps, topk):
+    device = select_device(device, force_cpu)
     print(f"Using device: {device}")
+    model_path = Path(artifacts_dir) / "model.pt"
+    model, vocab, idx_to_value, _cfg = load_artifacts(model_path, device=device)
 
+    pred_steps = predict_topk_next(
+        model=model,
+        initial_events=events,
+        vocab=vocab,
+        idx_to_value=idx_to_value,
+        steps=steps,
+        topk=topk,
+        device=device,
+    )
+
+    return pred_steps
+
+def cmd_predict(args: argparse.Namespace) -> None:
     # parse seed trace
     with open(args.data, "r") as f:
         events = list(map(lambda e: e.strip(), f.read().split(",")))
-    
+
     print(f"Found trace with {len(events)} steps.")
 
     if args.prefix_cut == -1:
         initial_events = events
     else:
         initial_events = events[:args.prefix_cut]
-    
 
-    pred_steps = predict_topk_next(
-        model=model,
-        initial_events=initial_events,
-        vocab=vocab,
-        idx_to_value=idx_to_value,
-        steps=args.steps,
-        topk=args.topk,
-        device=device,
-    )
+    pred_steps = predict_wrap(args.artifacts_dir, args.device, args.force_cpu, initial_events, args.steps, args.topk)
 
     print("Seed events:")
     for event in initial_events:

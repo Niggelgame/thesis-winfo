@@ -6,5 +6,5 @@ Evaluation consists of multiple evaluated scenarios.
 2. Remove some events from the traces and predict on them, then do check with original trace
 3. Add some completely unrelated events into the traces and predict on them, then check for validity with original trace
 
-## Simple szenario
+## Simple scenario
 
