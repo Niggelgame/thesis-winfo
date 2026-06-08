@@ -79,9 +79,10 @@ def cmd_train(args: argparse.Namespace) -> None:
     print(f"Saved model artifacts to {args.artifacts_dir}")
 
 
-def predict_wrap(artifacts_dir, device, force_cpu, events, steps, topk):
+def predict_wrap(artifacts_dir, device, print_device, force_cpu, events, steps, topk):
     device = select_device(device, force_cpu)
-    print(f"Using device: {device}")
+    if print_device:
+        print(f"Using device: {device}")
     model_path = Path(artifacts_dir) / "model.pt"
     model, vocab, idx_to_value, _cfg = load_artifacts(model_path, device=device)
 
@@ -109,7 +110,7 @@ def cmd_predict(args: argparse.Namespace) -> None:
     else:
         initial_events = events[:args.prefix_cut]
 
-    pred_steps = predict_wrap(args.artifacts_dir, args.device, args.force_cpu, initial_events, args.steps, args.topk)
+    pred_steps = predict_wrap(args.artifacts_dir, args.device, True, args.force_cpu, initial_events, args.steps, args.topk)
 
     print("Seed events:")
     for event in initial_events:

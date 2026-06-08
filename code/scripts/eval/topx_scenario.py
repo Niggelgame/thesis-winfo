@@ -2,23 +2,36 @@ import json
 
 from argparse import ArgumentParser
 
-from shared import predict_next, check_correct_prefix
+from shared import predict_next_topk, check_correct_prefix
 
+TOP_X = 2
 
-def predict_single(artifacts_dir, trace):
+def predict_single(artifacts_dir, trace, topk):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        next = predict_next(artifacts_dir, predict_from)
-        predict_from.append(next)
+        next = predict_next_topk(artifacts_dir, predict_from, topk)
 
         total += 1
-        is_prefix = check_correct_prefix(trace, predict_from)
-        if is_prefix:
+
+        ever_correct = False
+
+        for i in range(topk):
+            predict_from.append(next[i]["token"])
+            
+            is_prefix = check_correct_prefix(trace, predict_from)
+            if is_prefix:
+                ever_correct = True
+                break
+            
+            # remove last added token again
+            predict_from.pop()
+        
+        if ever_correct:
             correct += 1
-        else:
-            print(f"Predicted incorrect. Expected {trace[i]} but got {next}")
+        else: 
+            print(f"Failed to predict correct in {topk} top next!")
 
     return {
         "total": total,
@@ -35,7 +48,7 @@ def evaluate(args):
 
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.artifacts_dir, trace))
+        stats.append(predict_single(args.artifacts_dir, trace, TOP_X))
     
     print("Accuracy by trace:")
     total = 0
