@@ -1,5 +1,5 @@
 [project]
-name = "code"
+name = "scripts"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -8,3 +8,7 @@ dependencies = [
     "graphviz>=0.21",
     "torch>=2.12.0",
 ]
+[tool.uv]
+package = true
+[tool.setuptools]
+py-modules = ["heraklit_equiv_checker", "ml_model", "eval"]

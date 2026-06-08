@@ -4,8 +4,8 @@ from pathlib import Path
 
 import torch
 
-from simple_step_trace_preprocessor import extract_traces_and_timings
-from pipeline import TrainConfig, cross_validate_and_select, train_final_model, predict_topk_next, save_artifacts, load_artifacts
+from ml_model.simple_step_trace_preprocessor import extract_traces_and_timings
+from ml_model.pipeline import TrainConfig, cross_validate_and_select, train_final_model, predict_topk_next, save_artifacts, load_artifacts
 
 
 def select_device(device_arg: str, force_cpu: bool) -> torch.device:

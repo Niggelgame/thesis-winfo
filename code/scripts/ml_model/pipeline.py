@@ -10,8 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
-from simple_step_trace_preprocessor import build_vocab, NA
-from model import ProcessPredictionTransformer, generate_causal_mask
+from ml_model.simple_step_trace_preprocessor import build_vocab, NA
+from ml_model.model import ProcessPredictionTransformer, generate_causal_mask
 
 
 @dataclass

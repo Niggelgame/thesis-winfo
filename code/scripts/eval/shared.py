@@ -1,7 +1,31 @@
-from code.heraklit_equiv_checker.checker import check_equivalence
-from code.ml_model.main import predict_wrap
+import os
+import sys
+import importlib
+from pathlib import Path
+
+from heraklit_equiv_checker.checker import check_equivalence_step_file
+from ml_model.main import predict_wrap
 
 
 
+# returns [{"token": <>, "probability": <>}]
+def predict_next_topk(artifacts_dir, steps, topk):
+    res = predict_wrap(artifacts_dir, "auto", False, steps, 1, topk)
+    assert len(res) == 1
+    return res[0]["topk"]
+
+def predict_next(artifacts_dir, steps):
+    res = predict_next_topk(artifacts_dir, steps, 1)
+    if len(res) < 1:
+        return None
+    else: 
+        return res[0]["token"]
 
 
+def check_correct_prefix(full_trace, sub_trace):
+    here_path = os.path.abspath(os.path.dirname(__file__))
+    step_def_path = Path(here_path).parent / "heraklit_equiv_checker" / "tests" / "step_defs" / "fischertechnik_steps.json"
+    return check_equivalence_step_file(full_trace, sub_trace, step_def_path.absolute())
+
+
+# TODO: Graph / Table generation code 
