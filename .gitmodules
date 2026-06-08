@@ -1,0 +1,3 @@
+[submodule "code/heraklit-equiv-checker"]
+	path = code/scripts/heraklit-equiv-checker
+	url = git@github.com:Niggelgame/heraklit-equiv-checker.git
