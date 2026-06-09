@@ -6,6 +6,8 @@ This directory contains all the scripts related to data collection and early pre
 
 First data needs to extracted from the Fischertechnik APS using a MQTT connection to the included Broker. All events are written to JSON files.
 
+The events are (mostly) in the format specified by Fischertechnik in [the documentation files](../../../reading/fischertechnik-docs/aps-mqtt-docs-main/README.md)
+
 ## Data Aggregation
 
 Before any processing of the data itself takes place, the raw MQTT logs are first combined into a single data file:

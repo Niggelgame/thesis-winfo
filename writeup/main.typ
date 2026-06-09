@@ -20,7 +20,7 @@
     advisor: "Prof. Dr. Peter Fettke",
     first-reviewer: "Prof. Dr. Peter Fettke",
     second-reviewer: "TODO Second Reviewer",
-    abstract: todo[Write an abstract],
+    abstract: none,
     acknowledgments: todo[Write your acknowledgments]
   ),
   appendix: [

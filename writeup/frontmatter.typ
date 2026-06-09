@@ -13,7 +13,7 @@
   advisor: "",
   first-reviewer: "",
   second-reviewer: "",
-  abstract: [],
+  abstract: none,
   acknowledgments: [],
 ) = {
   // titlepage(
@@ -40,12 +40,14 @@
 
   counter(page).update(1)
 
-  [
-    = Abstract
+  if abstract != none {
+    [
+      = Abstract
 
-    #abstract
-  ]
-
+      #abstract
+    ]
+  }
+  
   // [
   //   = Acknowledgments
 
