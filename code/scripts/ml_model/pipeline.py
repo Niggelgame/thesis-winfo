@@ -424,7 +424,7 @@ def predict_topk_next(
     topk: int,
     device: torch.device,
 ) -> List[Dict[str, Any]]:
-    seq: List[int] = []
+    seq: List[int] =  [vocab["<BOS>"]]
     for ev in initial_events:
         seq.append(vocab.get(ev, vocab[NA]))
 
