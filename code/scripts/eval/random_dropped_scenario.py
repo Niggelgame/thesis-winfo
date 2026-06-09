@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from shared import predict_next, check_correct_prefix, RANDOM_SEED
 
 
-def predict_single(artifacts_dir, trace, drop_rate):
+def predict_single(artifacts_dir, trace, color, drop_rate):
     correct = 0
     total = 0
     # start from at least 2 elements to be able to even drop
@@ -27,7 +27,7 @@ def predict_single(artifacts_dir, trace, drop_rate):
 
         # print(f"Real Drop Rate: {1 - len(with_dropped)/len(predict_from):2%}")
 
-        next = predict_next(artifacts_dir, with_dropped)
+        next = predict_next(artifacts_dir, color, with_dropped)
         predict_from.append(next)
 
         total += 1
@@ -47,7 +47,8 @@ def evaluate(args):
     with open(args.validation_trace_paths, "r") as f:
         traces = json.load(f)
     
-    trace_tokens = [[ev["token"] for ev in trace["events"]] for trace in traces]
+    trace_tokens = [
+        {"color": trace["color"], "tokens": [ev["token"] for ev in trace["events"]]} for trace in traces]
 
     drop_rate_stats = {}
 
@@ -56,7 +57,7 @@ def evaluate(args):
         random.seed(RANDOM_SEED)
         stats = []
         for trace in trace_tokens:
-            stats.append(predict_single(args.artifacts_dir, trace, drop_rate))
+            stats.append(predict_single(args.artifacts_dir, trace["tokens"], trace["color"], drop_rate))
         
         print(f"DropRate: {drop_rate:.0%}\nAccuracy by trace:")
         total = 0
