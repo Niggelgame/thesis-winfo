@@ -5,12 +5,12 @@ from argparse import ArgumentParser
 from shared import predict_next, check_correct_prefix
 
 
-def predict_single(artifacts_dir, trace):
+def predict_single(artifacts_dir, color, trace):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        next = predict_next(artifacts_dir, predict_from)
+        next = predict_next(artifacts_dir, color, predict_from)
         predict_from.append(next)
 
         total += 1
@@ -30,12 +30,13 @@ def evaluate(args):
     with open(args.validation_trace_paths, "r") as f:
         traces = json.load(f)
     
-    trace_tokens = [[ev["token"] for ev in trace["events"]] for trace in traces]
+    trace_tokens = [
+        {"color": trace["color"], "tokens": [ev["token"] for ev in trace["events"]]} for trace in traces]
 
 
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.artifacts_dir, trace))
+        stats.append(predict_single(args.artifacts_dir, trace["color"], trace["tokens"]))
     
     print("Accuracy by trace:")
     total = 0

@@ -39,6 +39,7 @@ def cmd_preprocess(args: argparse.Namespace) -> None:
         out_traces = []
         for trace in traces:
             out_traces.append({
+                "color": trace["color"],
                 "events": [event.to_dict() for event in trace["events"]],
                 "rejected_events": {reason.value: [e for e in evs] for reason, evs in trace.get("rejected_events", {}).items()},
                 "timings": trace["timings"],
@@ -79,7 +80,7 @@ def cmd_train(args: argparse.Namespace) -> None:
     print(f"Saved model artifacts to {args.artifacts_dir}")
 
 
-def predict_wrap(artifacts_dir, device, print_device, force_cpu, events, steps, topk):
+def predict_wrap(artifacts_dir, device, print_device, force_cpu, color, events, steps, topk):
     device = select_device(device, force_cpu)
     if print_device:
         print(f"Using device: {device}")
@@ -89,6 +90,7 @@ def predict_wrap(artifacts_dir, device, print_device, force_cpu, events, steps, 
     pred_steps = predict_topk_next(
         model=model,
         initial_events=events,
+        color=color,
         vocab=vocab,
         idx_to_value=idx_to_value,
         steps=steps,
@@ -101,6 +103,7 @@ def predict_wrap(artifacts_dir, device, print_device, force_cpu, events, steps, 
 def cmd_predict(args: argparse.Namespace) -> None:
     # parse seed trace
     with open(args.data, "r") as f:
+        color = f.readline().strip()
         events = list(map(lambda e: e.strip(), f.read().split(",")))
 
     print(f"Found trace with {len(events)} steps.")
@@ -110,7 +113,7 @@ def cmd_predict(args: argparse.Namespace) -> None:
     else:
         initial_events = events[:args.prefix_cut]
 
-    pred_steps = predict_wrap(args.artifacts_dir, args.device, True, args.force_cpu, initial_events, args.steps, args.topk)
+    pred_steps = predict_wrap(args.artifacts_dir, args.device, True, args.force_cpu, color, initial_events, args.steps, args.topk)
 
     print("Seed events:")
     for event in initial_events:

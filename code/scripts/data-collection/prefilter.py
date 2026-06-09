@@ -8,6 +8,7 @@ def filter_traces(data, filter_func):
     for trace in data:
         filtered_trace = {
             "label": trace["label"],
+            "color": trace["color"],
             "file": trace["file"],
             "trace": [event for event in trace["trace"] if filter_func(event)],
         }

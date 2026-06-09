@@ -13,12 +13,14 @@ with open(sys.argv[1], "r") as f:
 
 steps = []
 for trace in data:
-    tr_steps = [ev["token"] for ev in trace["events"]]
+    tr_steps = {"color": trace["color"], "steps": [ev["token"] for ev in trace["events"]]}
     steps.append(tr_steps)
 
 with open(sys.argv[2], "w") as f:
     for trace in steps:
-        f.write(", ".join(trace))
+        f.write(trace["color"])
+        f.write("\n")
+        f.write(", ".join(trace["steps"]))
         f.write("\n\n")
 
 print(f"Wrote {len(steps)} trace's steps")

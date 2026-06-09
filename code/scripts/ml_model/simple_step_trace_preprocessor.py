@@ -31,7 +31,6 @@ class RejectReason(Enum):
     DUPLICATE_STATE = "DUPLICATE_STATE"
     DUPLICATE_ACTION = "DUPLICATE_ACTION"
     BEFORE_FIRST_ORDER = "BEFORE_FIRST_ORDER"
-    DPS_ORDER_NO_COLOR = "DPS_ORDER_NO_COLOR"
 
 
 # Layout-derived mapping from serial number to stable device type.
@@ -285,12 +284,7 @@ class DPSEvent:
             if command not in DPSEvent.commands.keys():
                 return RejectReason.INVALID_PAYLOAD
 
-            # DPS also contains color from metadata
-            color = action.get("metadata", {}).get("workpiece", {}).get("type", None)
-            if color == None:
-                return RejectReason.DPS_ORDER_NO_COLOR
-
-            token = f"{DPSEvent.module} {color} {DPSEvent.commands[command]["RUNNING"]}"
+            token = f"{DPSEvent.module} {DPSEvent.commands[command]["RUNNING"]}"
 
             return ShadowEvent(
                 module=DPSEvent.module,
@@ -783,6 +777,7 @@ def extract_traces_and_timings(file_path: str) -> List[Dict[str, Any]]:
         processed_traces.append(
             {
                 "events": events,
+                "color": run.get("color", "unknown"),
                 "timings": timings,
                 "rejected_events": dict(
                     rejected_events
@@ -821,14 +816,10 @@ vocab_steps = [
     "HBW Drop",
     "HBW Dropped",
     "HBW Drop Failed",
-    "DPS RED Pick",
-    "DPS RED Drop",
-    "DPS WHITE Pick",
-    "DPS WHITE Drop",
-    "DPS BLUE Pick",
-    "DPS BLUE Drop",
+    "DPS Pick",
     "DPS Picked",
     "DPS Pick Failed",
+    "DPS Drop",
     "DPS Dropped",
     "DPS Drop Failed",
     "DRILL Pick",
@@ -870,6 +861,11 @@ def build_vocab() -> Dict[str, int]:
     }  # Start with NA and some generic tokens in vocab
 
     c = 4
+    # add "color" tokens
+    for color in ["RED", "WHITE", "BLUE"]:
+        vocab[f"<COLOR {color}>"] = c
+        c += 1
+
     for step in vocab_steps:
         vocab[step] = c
         c += 1

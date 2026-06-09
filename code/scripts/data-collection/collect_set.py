@@ -31,6 +31,15 @@ if __name__ == "__main__":
                 res = "error"
             else:
                 res = "unknown"
+            
+            if "Blau" in plain_filename:
+                color = "BLUE"
+            elif "Rot" in plain_filename:
+                color = "RED"
+            elif "Weiß" in plain_filename:
+                color = "WHITE"
+            else:
+                color = "unknown"
 
             trace_entries = []
             with open(os.path.join(args.input, filename), "r", encoding="utf-8") as f:
@@ -39,6 +48,7 @@ if __name__ == "__main__":
             
             trace = {
                 "label": res,
+                "color": color,
                 "file": plain_filename,
                 "trace": trace_entries,
             }

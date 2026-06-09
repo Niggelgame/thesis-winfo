@@ -10,13 +10,13 @@ RANDOM_SEED = 42
 
 
 # returns [{"token": <>, "probability": <>}]
-def predict_next_topk(artifacts_dir, steps, topk):
-    res = predict_wrap(artifacts_dir, "auto", False, False, steps, 1, topk)
+def predict_next_topk(artifacts_dir, color, steps, topk):
+    res = predict_wrap(artifacts_dir, "auto", False, False, color, steps, 1, topk)
     assert len(res) == 1
     return res[0]["topk"]
 
-def predict_next(artifacts_dir, steps):
-    res = predict_next_topk(artifacts_dir, steps, 1)
+def predict_next(artifacts_dir, color, steps):
+    res = predict_next_topk(artifacts_dir, color, steps, 1)
     if len(res) < 1:
         return None
     else: 

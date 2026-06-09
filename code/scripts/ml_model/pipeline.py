@@ -54,6 +54,10 @@ class ProcessTraceDataset(Dataset):
         # turn tokens into numbers
         seq: List[int] = {}
         seq = [self.vocab["<BOS>"]]
+
+        if trace["color"] and trace["color"] != "unknown":
+            seq.append(self.vocab[f"<COLOR {trace["color"]}>"])
+
         seq.extend(self._event_to_id(ev) for ev in events)
         seq.append(self.vocab["<EOS>"])
 
@@ -176,9 +180,9 @@ def one_epoch(
 
 # build search space for model parameters
 def build_search_space() -> List[Dict[str, Any]]:
-    d_models = [18, 32]
-    layers = [1, 2]
-    dropouts = [0.1, 0.2]
+    d_models = [18, 32, 64]
+    layers = [1, 2, 3]
+    dropouts = [0.1, 0.2, 0.3]
     learning_rates = [3e-3, 1e-3]
 
     configs: List[Dict[str, Any]] = []
@@ -418,6 +422,7 @@ def load_artifacts(model_path: Path, device: torch.device):
 def predict_topk_next(
     model: ProcessPredictionTransformer,
     initial_events: Sequence[str],
+    color: str,
     vocab: Dict[str, int],
     idx_to_value: Dict[int, str],
     steps: int,
@@ -425,6 +430,9 @@ def predict_topk_next(
     device: torch.device,
 ) -> List[Dict[str, Any]]:
     seq: List[int] =  [vocab["<BOS>"]]
+    if color and color != "unknown":
+        seq.append(vocab[f"<COLOR {color}>"])
+
     for ev in initial_events:
         seq.append(vocab.get(ev, vocab[NA]))
 
