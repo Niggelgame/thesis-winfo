@@ -6,12 +6,12 @@ from shared import predict_next_topk, check_correct_prefix
 
 TOP_X = 2
 
-def predict_single(artifacts_dir, trace, topk):
+def predict_single(artifacts_dir, trace, color, topk):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        next = predict_next_topk(artifacts_dir, predict_from, topk)
+        next = predict_next_topk(artifacts_dir, color, predict_from, topk)
 
         total += 1
 
@@ -43,12 +43,13 @@ def evaluate(args):
     with open(args.validation_trace_paths, "r") as f:
         traces = json.load(f)
     
-    trace_tokens = [[ev["token"] for ev in trace["events"]] for trace in traces]
+    trace_tokens = [
+        {"color": trace["color"], "tokens": [ev["token"] for ev in trace["events"]]} for trace in traces]
 
 
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.artifacts_dir, trace, TOP_X))
+        stats.append(predict_single(args.artifacts_dir, trace["tokens"], trace["color"], TOP_X))
     
     print("Accuracy by trace:")
     total = 0

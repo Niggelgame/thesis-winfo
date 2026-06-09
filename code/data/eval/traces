@@ -1,9 +1,9 @@
-BLUE
-DPS Drop, DPS Dropped, AGV move DPS to HBW, HBW Pick, HBW Picked, HBW Drop, HBW Dropped, AGV move HBW to MILL, MILL Pick, MILL Picked, MILL Mill, MILL Milled, MILL Drop, MILL Dropped, AGV move MILL to DRILL, DRILL Pick, DRILL Picked, DRILL Drill, DRILL Drilled, DRILL Drop, DRILL Dropped, AGV move DRILL to AIQS, AIQS Pick, AIQS Picked, AIQS Check, AIQS Check Failed
+RED
+AGV move AIQS to DPS, DPS Drop, DPS Dropped, AGV move DPS to HBW, HBW Pick, HBW Picked, HBW Drop, HBW Dropped, AGV move HBW to MILL, MILL Pick, MILL Picked, MILL Mill, MILL Milled, MILL Drop, MILL Dropped, AGV move MILL to AIQS, AIQS Pick, AIQS Picked, AIQS Check, AIQS Check Failed
 
 WHITE
 AGV move AIQS to DPS, DPS Drop, DPS Dropped, AGV move DPS to HBW, HBW Pick, HBW Picked, HBW Drop, HBW Dropped, AGV move HBW to DRILL, DRILL Pick, DRILL Picked, DRILL Drill, DRILL Drilled, DRILL Drop, DRILL Dropped, AGV move DRILL to AIQS, AIQS Pick, AIQS Picked, AIQS Check, AIQS Check Failed
 
-RED
-AGV move AIQS to DPS, DPS Drop, DPS Dropped, AGV move DPS to HBW, HBW Pick, HBW Picked, HBW Drop, HBW Dropped, AGV move HBW to MILL, MILL Pick, MILL Picked, MILL Mill, MILL Milled, MILL Drop, MILL Dropped, AGV move MILL to AIQS, AIQS Pick, AIQS Picked, AIQS Check, AIQS Check Failed
+WHITE
+DPS Drop, DPS Dropped, AGV move DPS to HBW, HBW Pick, HBW Picked, HBW Drop, HBW Dropped, AGV move HBW to DRILL, DRILL Pick, DRILL Picked, DRILL Drill, DRILL Drilled, DRILL Drop, DRILL Dropped, AGV move DRILL to AIQS, AIQS Pick, AIQS Picked, AIQS Check, AIQS Check Failed
 

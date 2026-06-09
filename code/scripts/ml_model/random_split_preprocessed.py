@@ -5,7 +5,7 @@ import math
 
 # predefined ration of train to validation
 TRAIN_TO_VAL = 0.7
-RANDOM_SEED = 42
+RANDOM_SEED = 44
 
 if len(sys.argv) != 4:
     print("Usage: random_split_preprocessed.py <in_file> <out_file_train> <out_file_val>")
