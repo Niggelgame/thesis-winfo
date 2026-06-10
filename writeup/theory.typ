@@ -239,6 +239,7 @@ The third sublayer of the transformer block is a simple 2-layer fully-connected 
 
 After the transformer blocks, we need to extract the next token. Similarly to the initial embedding, we now need to map the embedded $d_("ctx")$ $d_("model")$-dimensional vectors back to our tokens. We again apply a learnable linear layer to the embedding, resulting in vectors the same size as the vocab with all tokens. After normalisation, the vector at position $i$ contains a probability distribution over the token at position $i+1$.
 
+#line()
 
 We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource are not a concern for us. 
 
@@ -250,6 +251,6 @@ Our approach to use the transformer architecture therefore relies on training a 
 
 The architecture requires us to encode our Heraklit steps into _tokens_. We chose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one can simply encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. The output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution.
 
-Further details on Fischertechnik APS specifics are discussed in @implementation.
+Further details on Fischertechnik APS specifics and the training of our model are discussed in @implementation.
 
 

@@ -1,11 +1,16 @@
 #import "@preview/benplate:0.1.0": note, todo
 #import "@preview/cetz:0.5.0": canvas, draw
+#import "lib.typ": *
 
 = Modelling<modelling>
 
-We want to evaluate our process prediction technique on the Fischer-Technik *Agile Production Simulator* #footnote[#link("https://www.fischertechnik.de/de-de/industrie-und-hochschulen/technische-dokumente/simulieren/agile-production-simulation")]. Prior to the evaluation, we want to set the theoretical foundation of _what_ the predictions mean. We do this by modelling the Heraklit @heraklit steps required to represent process models#note[Explain the Heraklit step modeling in background before] . These steps are later on predicted by our technique, thus it is crucial to have a clear understanding of what they represent and how they are defined.
+This section marks the beginning of our case study, showcasing the approach of using Heraklit and the Transformer architecture to perform next-step process prediction.
 
-These steps can be grouped by the relevant factory modules:
+We want to evaluate our process prediction technique on the Fischertechnik *Agile Production Simulator* @fischertechnik. As required by our definition of what a correct prediction is (#ref_def("Correct Prediction")), we will first need to translate events of the APS into Heraklit @heraklit steps. These steps should crucially allow the modelling of concurrency within the system by only modelling the causal relationships of events.
+
+While some domain knowledge is necessary for this step, still only step modules need to be created, not full system process models. As these steps are predicted by our technique, having a clear understanding of what each step represents is useful during further evaluation.
+
+We can split and group the steps by the relevant factory modules:
 
 - Automated Guided Vehicle (*AGV*): It autonomously transports workpieces between factory modules. 
 - High-Bay Warehouse (*HBW*): It serves as a storage system to the factory, designed with an automatic retrieval. 
@@ -13,18 +18,24 @@ These steps can be grouped by the relevant factory modules:
 - Drilling Station (*DRILL*): It performs a simulated drilling operation on the workpieces, picking them up from and dropping them onto the AGV.
 - Milling Station (*MILL*): It performs a simulated milling operation on the workpieces, picking them up from and dropping them onto the AGV.
 - Quality Control with AI (*AIQS*): Checks the quality of a workpiece using a camera and color sensor. If a failure occurred - represented by a erroneous print on the workpiece - the workpiece is discarded.
-- Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus for our modelling purposes, it will be the *glue* that connects the modules together, while ensuring different processes for different piece types. 
+- Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus for our modelling purposes, it will be the glue that connects the modules together.
 
 == Heraklit Step Modelling
 
 === AGV
 
+We start by modelling the AGV. It is the main source of interaction in the APS, however it can only perform one action by itself, which is moving from one processing module to the next. As we want to have one token per step, we need to create multiple *move AGV* steps.
+
+For each module $#[`M1`] in {"DPS, HBW, DRILL, MILL, AIQS"} := M$ we need to have a move step to each module $#[`M2`] in M \\ {m}$. Thus in the following step module template, we get all possible *move AGV* steps by instantiating `M1` and `M2` with all possible combinations.
+
 
 #include "figures/agv/steps.typ"
 
-#include "figures/agv/run.typ"
+A keen reader with might realize that this could be modeled using a parameterized module, an advanced Heraklit concept not introduced in @theory. As no further parameterization was necessary in the remaining modelling, the introduction, definitions and complexity can be reduced by showcasing the template steps instead. For the sake of completeness, the step module as a parameterized module is shown below.
 
-These atomic steps are modeled with the variables and domains defined as ```
+#include "figures/agv/steps_param.typ"
+
+This type of modelling requires defining variables and domains as ```
 variable
 y: process-module
 
@@ -32,12 +43,27 @@ domain
 process-module: {DPS, HBW, DRILL, MILL, AIQS}
 ```
 
-Important to notice is that the `AGV move` step transition is non-deterministic, as it does not consume the variable from the previous place, the input `AGV at`. It does however pass this decided variable onto the remaining parts of the process.
+Important to notice is that depending on which *AGV move* step is taken, different step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at MOD` place.
 
-This will be relevant to ensure that the steps in the other modules can depend on the decision made in the `AGV move` step, as they depend on the AGVs position.
+=== Picking and Dropping
 
-@move-agv-run shows the composition of the two step atoms, showing the typical run that can be found in the factory logs.
+All other modules need to phsycially interact with the remaining factory by picking up workpieces from the AGV or dropping workpieces onto the AGV. This workflow is generally the same over all modules, thus to reduce wasted space, we again fall back to modelling these steps using the following template, with #block(breakable: false)[$#[`MOD`] in {"DPS, HBW, DRILL, MILL, AIQS"}$]
 
+#grid(
+  columns: (1fr, 1fr),
+  rows: (auto),
+  include "figures/pick_drop/steps_pick.typ",
+  include "figures/pick_drop/steps_drop.typ"
+)
+
+Two points should be highlighted:
+1. We are modelling failure modes. In case the action fails, the respective `Pick Failed` or `Drop Failed` can be composed instead of the `Picked` or `Dropped` successful counterpart.
+2. The AGV is not able to move while the picking or dropping action is performed, as it consumes the token at `AGV at MOD` token.
+
+Next we will look at the individual process module actions.
+
+#todo[Process Module changes (:]
+#todo[Add the other modules to the appendix anyways?]
 
 === HBW
 
