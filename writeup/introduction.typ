@@ -1,3 +1,5 @@
+#import "@preview/benplate:0.1.0": note, todo
+
 = Introduction
 
 
@@ -29,7 +31,7 @@ In this work, we present an approach to use transformer networks to solve the ne
 
 // Heraklit provides a well-defined process semantics, especially regarding the comparison of process runs by 
 
-We evaluate this approach on the Fischertechnik *Agile Production Simulator* (APS) #footnote[#link("https://www.fischertechnik.de/de-de/industrie-und-hochschulen/technische-dokumente/simulieren/agile-production-simulation")], providing the tools for end-to-end prediction. We extract process logs directly from the internal MQTT broker and then fit and train the model based on derived Heraklit steps. The model achieves an outstanding 92% accuracy on single next-event prediction. Similar results can still be achieved when simulating noisy MQTT logs by removing events or adding random events into the logs.
+We evaluate this approach on the Fischertechnik *Agile Production Simulator* (APS) #footnote[#link("https://www.fischertechnik.de/de-de/industrie-und-hochschulen/technische-dokumente/simulieren/agile-production-simulation")], providing the tools for end-to-end prediction. We extract process logs directly from the internal MQTT broker and then fit and train the model based on derived Heraklit steps. The model achieves an outstanding 92% accuracy on single next-event prediction. Similar results can still be achieved when simulating noisy MQTT logs by removing events or adding random events into the logs. #todo[Fill in latest results]
 
 The structure of the thesis can be summarized as follows. @theory introduces the necessary background on Heraklit, Transformers and MQTT while providing information on theorical prediction approach.
 
