@@ -15,6 +15,9 @@ jobs:
         uses: lvignoli/typst-action@main
         with:
           source_file: writeup/main.typ
+          options: |
+              --font-path
+              writeup/fonts
 
       - name: Upload PDF file
         uses: actions/upload-artifact@v4
