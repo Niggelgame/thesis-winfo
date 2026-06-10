@@ -206,11 +206,41 @@ Over the last decade, research mostly identified deep-learning approaches as an 
 
 While using Long Short-Term-Memory models (LSTMs), a special version of recurring neural networks (RNN) showed it successes @lstmref1 @lstmref2, later state-of-the-art models use the transformer architecture @transformerpred1 @transformerpred2.
 
-== Transformer Architecture
+=== Transformer Architecture
 
-First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
+First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250.000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
 
-#todo[Transformer Architecture Overview]
+The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focusses on creating an _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the both structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focussed on next token generation only. 
+
+As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure that sub-module.
+
+The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum amount of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a traininable linear layer, essentially the index of the tokens in the vocab to the lower dimension, _embedding_ it.
+Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as will be further variables written as $d_("param")$, and need to be chosen before training.
+
+Next follows a _posititional encoding_, where fixed geometrically decreasing frequences are added to the input embeddings to encode the position of the token within the sequence. As no further weight is giving to the explicit original sequence order in the following steps, this encoding provides the only way to distinct two tokens distance in the upcoming layers. 
+
+The now properly embedded sequence is now passed through $d_("layer")$ repetitions of the transformer blocks. They each again consist of three sublayers, connected each by a layer normalization. Assuming input $x$ to a sublayer and $"Sublayer"(x)$ the function performed by the sublayer, the output is $"LayerNorm"(x + "SubLayer"(x))$, to keep the output stable without any unexpected outliers complicating the gradient descent during training.
+
+Two of the sublayers are _Multi-Head Attention Layers_. Here the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The resuls are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
+
+#align(center)[$"Attention"(Q_i, K_i, V_i) = "softmax"("mask"(Q_i K_i^T)/(sqrt(d_k))))V_i$]
+
+This computation can be intuitively understood as follows. 
+
+1. Combining $Q_i$ and $K_i$: $Q_i$ represents a certain learned query, essentially encoding which part of the embedding is interested in getting certain information of other tokens. $K_i$ highlights positions in the embedding, that are match this information of the query $Q_i$. By multiplying them, one combines the interested embedding with the tokens that contain information.
+2. Lowering the magnitude of the values in the combined matrix by dividing by $sqrt(d_k)$, such that the $"softmax"$ function has smoother gradients. 
+3. Masking out all fields that try to let tokens refer to tokens after them, by setting the matrix upper right diagonal to $- infinity$.
+4. $"softmax"$ itself performs a rowwise normalisation, such that all rows represent a random distribution, i. e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
+5. Multiplying by $V_i$: $V_i$ contains the embedding of the information that is present, if the query and key match. Thus the multiplication linearly scales that information within the embedding.
+
+The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatinated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
+
+The third sublayer of the transformer block is a simple 2-layer fully-connected feed-forward network with a ReLU activation function. The input and output layers have dimension $d_("model")$ and the inner layer $d_("dim_ff")$.
+
+After the transformer blocks, we need to extract the next token. Similarly to the initial embedding, we now need to map the embedded $d_("ctx")$ $d_("model")$-dimensional vectors back to our tokens. We again apply a learnable linear layer to the embedding, resulting in vectors the same size as the vocab with all tokens. After normalisation, the vector at position $i$ contains a probability distribution over the token at position $i+1$.
+
+
+We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource are not a concern for us. 
 
 === Technical requirements for Process Prediction
 

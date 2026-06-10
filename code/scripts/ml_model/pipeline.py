@@ -180,7 +180,7 @@ def one_epoch(
 
 # build search space for model parameters
 def build_search_space() -> List[Dict[str, Any]]:
-    d_models = [18, 32, 64]
+    d_models = [16, 32]
     layers = [1, 2, 3]
     dropouts = [0.1, 0.2, 0.3]
     learning_rates = [3e-3, 1e-3]

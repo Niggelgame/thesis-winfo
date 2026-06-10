@@ -9,6 +9,7 @@ This chapter provides the technical details of the implementation of our process
 == Model Architecture 
 
 -> embedder
--> 
 
 == Training Details
+
+training: Adam optimizer, regularization using dropout.
