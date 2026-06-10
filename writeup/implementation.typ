@@ -4,6 +4,11 @@ This chapter provides the technical details of the implementation of our process
 
 == Data Collection and Preprocessing
 
+- split is valid, as all exeuctions are independent of another
+
 == Model Architecture 
+
+-> embedder
+-> 
 
 == Training Details

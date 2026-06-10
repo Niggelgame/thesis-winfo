@@ -403,6 +403,9 @@ def load_artifacts(model_path: Path, device: torch.device):
         dim_feedforward=cfg.dim_feedforward,
         dropout=cfg.dropout,
     ).to(device)
+
+    num_of_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    # print(f"loading model with {num_of_params} parameters")
     state = payload["model_state"]
     # add params here in case model changed
     missing = []
