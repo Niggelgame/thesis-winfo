@@ -62,144 +62,122 @@ Two points should be highlighted:
 
 Next we will look at the individual process module actions.
 
-#todo[Process Module changes (:]
-#todo[Add the other modules to the appendix anyways?]
-
 === HBW
 
-#grid(
-  columns: (1fr, 1fr),
-  rows: (auto),
-  include "figures/hbw/steps_pick.typ",
-  include "figures/hbw/steps_drop.typ"
-)
+The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage, and of dropping workpieces from storage onto the AGV. 
+
+This might seem like actions that require a lot of control, first due to needing to select what workpiece should be extracted from storage, and second due to storage management itself.
+
+However, the Fischertechnik simplified both control challenges by 
+
+1. only looking at the current running order that the pick or drop action is associated with, figuring out what color it refers to and then 
+2. performing a _First-In First-Out_ (FIFO) storage policy for all colors, keeping the mapping of colors to ordered storage slots persistent.
+
+Thus when executing a pick or drop, it can do so without any further information. We decide to not try to model the internal (unexposed) storage logic here, as no events are emitted through the MQTT logs and therefore no step can be mapped to it. The generic `MOD Pick` and `MOD Drop` actions defined in @pick-steps-template and @drop-steps-template can be reused here.
+
+A successful HBW pick run can be seen in @pick-hbw-run, a failed HBW pick @pick-hbw-run-fail.
 
 
-
-#include "figures/hbw/system_pick.typ"
-#include "figures/hbw/system_drop.typ"
-
-
-In the steps regarding the HBW actions in @pick-hbw-steps and @drop-hbw-steps, we introduce the new variable `x`, defined as follows.
-
-```
-variable
-x: workpiece
-
-domain
-workpiece: {blue, red, green}
-```
-
-The pattern of passing around the workpiece variable `x` will continue to appear in most other processing steps. This variable allows us to configure the processing steps to depend on the type of workpiece being processed, which is crucial to ensure that the process prediction technique can learn to correctly predict the processing of different workpieces across the factory.
+#include "figures/hbw/run_pick_succ.typ"
+#include "figures/hbw/run_pick_fail.typ"
 
 
-The HBW Pick system model (@pick-hbw-system) takes a workpiece from the AGV and stores it in the warehouse. The HBW Drop system model (@drop-hbw-system) performs the reverse operation, thus dropping a workpiece into the AGV. 
+They are clearly defined by composing the singular pick steps:
 
-Both system models are very similar, as they perform a similar operation, just in reverse. Surprisingly there is not much logic involved, as we decided to not model the explicit HBW state here, i.e. leaving out what is stored where. 
+$&#[*HBW Pick success*] &= &#[*HBW Pick*] bullet #[*HBW Picked*] \
+&#[*HBW Pick failure*] &= &#[*HBW Pick*] bullet #[*HBW Pick Failed*]$
+
+These runs are exemplary for all module `Pick` and `Drop` runs, as they always follow the same structure. 
 
 === DPS
 
-The DPS needs to insert pieces into the factory and ship them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the piece onto the AGV from the loading bay. The shipping out of the factory by `DPS Pick`, picking the piece up from the AGV and dropping it off at the loading bay. Both steps are reading and writing to the NFC Tag on the piece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose to not model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. 
+The DPS is responsible for insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
 
-Notably, the `DPS Drop` system (@drop-dps-system) contains the only step that can introduce a new workpiece into the factory, thus it is the only step that can introduce a new variable assignment to `x`, as it is the only step that can introduce a new workpiece into the process. The remaining process steps will look similar to other upcoming Pick and Drop steps, however they will not be able to change or introduce the workpiece variable assignment.
+Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose to not model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
 
-Notice how the @drop-dps-steps contains a failure case, where drop can fail. While most other failures will result in the order failing, at this point we don't have an active order with any part yet - the was just about the be arriving in our factory. Thus we only model it as a failed drop, the CCU will need to decide how to handle this failure, e.g. by retrying the drop or by cancelling operations.
+Notably, the `DPS Drop` step is the only step that can introduce a new workpiece into the factory. New workpieces are generally first stored into the HBW and then extracted again with an order, even if an order for that piece is already present. 
 
-#grid(
-  columns: (1fr, 1fr),
-  rows: (auto),
-  include "figures/dps/steps_drop.typ",
-  include "figures/dps/steps_pick.typ"
-)
+The failure case of a `DPS Drop` could require different processing than other dropping steps, as this is the only action where a workpiece might not have an order associated to it yet. However, as we are only processing single workpieces at a time in our dataset, the order failure case is an appropriate failure model, as either way the processing of that workpiece ends there.
 
-#include "figures/dps/system_drop.typ"
-#include "figures/dps/system_pick.typ"
-
+We do not need to introduce any additional new steps, as again the abstraction given through the MQTT traces does not provide further details.
 
 
 === DRILL
 
-The drill module also has to interact with the AGV, thus we also introduce Pick (@pick-drill-steps) and Drop (@drop-drill-steps) steps for the drilling station. Additionally, the module can also perform a certain module-specific action, in this case the simulated drilling of a hole into the workpiece (@drill-drill-steps). The variables follow the same definitions as in previous module definitions.
+Like all other physical modules, the drill process module has to interact with the AGV to process workpieces. Therefore the `Pick` and `Drop` template is defined for the it as well.
 
-The Pick and Drop step definitions are defined completely analogous up to renaming to the ones of the HBW. We will see the same pattern in the coming modules as well, as the picking and droppping interactions with the AGV appear in all modules.
+Additionally, this is the first module to perform a certain module-specific action observable via the MQTT logs. This unique action is simulated drilling of a hole into the workpiece, which can again succeed or fail. The matching Heraklit step definitions can be seen in @drill-drill-steps. Notice that 
 
-However, the drilling step is unique to the drill module, performing the actual processing of the worpiece at that station. 
+1. We require a workpiece to be picked up from the AGV to be able to start the drill action by consuming the token at the place `Finish DRILL Pick`.
+2. We do not require the AGV to be at the drill module during the drilling steps, opening up the future possiblity of having multiple modules process workpieces simultaneously within the same model, as the AGV can drive to a different station during processing at the drill.
 
-The typical compositions can be seen in @pick-drill-system, @drop-drill-system and @drill-drill-system. These system models combined provide a top-level view on the drilling station process.
-
-// Steps
-#grid(
-  columns: (1fr, 1fr),
-  rows: (auto),
-  include "figures/drill/steps_drop.typ",
-  include "figures/drill/steps_pick.typ"
-)
 #include "figures/drill/steps_drill.typ"
 
-// System Models
-#include "figures/drill/system_pick.typ"
-#include "figures/drill/system_drop.typ"
-#include "figures/drill/system_drill.typ"
+Both of these properties can be re-discovered in the following module-specific step-definitions.
+
+While there is a parameter for the drilling duration defined for each workpiece color, we decide to not model it due to two reasons. First, the parameter is constant and thus just belongs directly to the drilling operation of that color. Second, even assuming it was not constant, there is no causal relationship to be learned as to why the duration should be different. The Fischertechnik APS provides no simulated tool wear or different operation durations for simualted broken or working workpieces.
+
+We again provide a successful run in @drill-drill-run and a failed run in @drill-drill-run-failure, composed of:
+
+$&#[*DRILL Drill success*] &= &#[*DRILL Drill*] bullet #[*DRILL Drilled*] \
+&#[*DRILL Drill failure*] &= &#[*DRILL Drill*] bullet #[*DRILL Drill Failed*]$
+
+
+#include "figures/drill/run_drill_succ.typ"
+#include "figures/drill/run_drill_fail.typ"
+
 
 
 
 === MILL
 
-The mill module performs the same function as the drill, only changing the simulated action to milling a groove into the workpiece instead of drilling.
 
-Thus it contains the steps for picking (@pick-mill-steps), dropping (@drop-mill-steps) and milling (@mill-mill-steps). The system models are defined in @pick-mill-system, @drop-mill-system and @mill-mill-system.
+Similarly to the drill, the mill process module performs a simulated action, but it is an operation to simulate milling a grove into the workpiece instead of the drilling operation. It again also contains the template `Pick` and `Drop` steps. 
 
+Thus the steps are defined identically modulo renaming in @mill-mill-steps. Thus the same properties hold and the runs can be composed in a similar fashion as in @drill-drill-run and @drill-drill-run-failure.
 
-#grid(
-  columns: (1fr, 1fr),
-  rows: (auto),
-  include "figures/mill/steps_drop.typ",
-  include "figures/mill/steps_pick.typ"
-)
 #include "figures/mill/steps_mill.typ"
-
-#include "figures/mill/system_pick.typ"
-#include "figures/mill/system_drop.typ"
-#include "figures/mill/system_mill.typ"
 
 === AIQS
 
-The last physical module is the AIQS, which provides a quality control checkpoint for all orders. Using a camera and a color sensor, it can detect faults (printed onto the pieces) and then discard faulty pieces into a trash chute, while passing good pieces on. 
+The last physical module is the AIQS, which provides a quality control checkpoint for all orders. To simulate failure within the APS, workpieces inserted into the factory at the DPS are designated `fail` or `pass` pieces, determined by a print on top of the piece. Using a camera and a color sensor, it can detect these faults and then discard faulty pieces into a trash chute, while passing good pieces on. 
 
-As with the previous two processing stations, it also contains Pick (@pick-aiqs-steps) and Drop (@drop-aiqs-steps) steps. Additionally, it implements its Check Quality (@check-quality-aiqs-steps) steps. The system models are defined in @aiqs-pick-system, @aiqs-drop-system and @aiqs-check-quality-system.
+Besides the `Pick` and `Drop` steps, the AIQS needs to perform this quality check action. The matching steps are defined in @check-quality-aiqs-steps.
 
-#grid(
-  columns: (1fr, 1fr),
-  rows: (auto),
-  include "figures/aiqs/steps_drop.typ",
-  include "figures/aiqs/steps_pick.typ"
-)
 #include "figures/aiqs/steps_check_quality.typ"
 
-#include "figures/aiqs/system_pick.typ"
-#include "figures/aiqs/system_drop.typ"
-#include "figures/aiqs/system_check_quality.typ"
+In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behaviour of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, thus that a prediction has some grounds to base its decision on. 
+
+We will later see that this results in missed accuracy of our prediction model.
+
+A composed success run of the AIQS can be seen in @aiqs-check-run, the failure in @aiqs-check-run-failed.
+
+#include "figures/aiqs/run_aiqs_succ.typ"
+#include "figures/aiqs/run_aiqs_fail.typ"
+
 
 === CCU
 
-The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory owner.
+The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
-Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, is *implicit* or *invisble* control. There is no control transition token to be found in the MQTT logs, the control can just be inferred from the interactions between the modules. 
-This means that the CCU steps will not be present in the prediction tokens. 
+Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, is *implicit* or *invisble* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
+This means that the CCU steps will and can not be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
 
-For a potential synthetic generation of runs modelling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed. This would imply pre-modelling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. 
+For a potential synthetic generation of runs modelling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modelling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `MILL` step to the `DRILL` step.
 
 #include "figures/direct_connect_drill_mill.typ"
 
-This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* with increases in configurations and length of runs. As these control steps are not to be found within the logs, all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
+This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with increases in modules, and again expontential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
 
-We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all parts of a singular workpiece are always only present in one module action, these actions don't need to be able to run concurrently. 
+We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all processing parts of a singular workpiece are always only present in one processing module's action, these actions don't need to be able to run concurrently. 
+
+Technically, this restriction is applied by creating a global shared place called `Next Module Ready`. Whenever a module wants to start, it needs to consume this place, whenever it is finished, it will fill the place again. Following the example from before, this creates the new steps in @implicit-connect-drill-mill. 
 
 #include "figures/implicit_connect_drill_mill.typ"
 
-Technically, this restriction is applied by creating a global place called `Next Module Ready`. Whenever a module wants to start, it needs to consume this place, whenever it is finished, it will fill the place again. Following the example from before, this creates the new steps in @implicit-connect-drill-mill. 
+This new design does not directly solve the issue of these control steps missing in the logs, but provides a simple solution. By composing $"DRILL Dropped" bullet "Implicit DRILL end"$ and $"Implicit MILL start" bullet "MILL Pick"$ we create a run module that essentially just changes the interfaces of the module steps to have the `Next Module Ready` place instead of their respective `Start` and `Finish` places. These newly composed models can be then again composed directly via the `Next Module Ready`. 
 
-This new design does not directly solve the issue of these control steps missing in the logs, but provides a simple solution. By composing $"DRILL Dropped" circle.small "Implicit DRILL end"$ and $"Implicit MILL start" circle.small "MILL Pick"$ it essentially just changes the interfaces of the module steps to have the `Next Module Ready` place instead of their respective `Start` and `Finish` places. These newly composed models can be then again composed directly via the `Next Module Ready`. As we know that before and after all module actions their steps will need their one matching `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
+As we know that before and after all module actions their steps will need their one matching `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
 
 For example, if the logs contain the steps
 
@@ -212,3 +190,26 @@ we can instead interpret this as
 as the implicit steps can be directly inferred.
 
 At this point, one might wonder why we have not directly put the `Next Module Ready` step into the module steps. The reason for this decision is that we can keep the level of detail on the module basis, while essentially just having an interface wrapper to simplify implementation details later.
+
+All the implicit control steps, that are are implicitely composed with the respective `Start` and `Finish` steps of the processing modules can be found in @implicit-connect-steps. Notably, the DRILL, MILL and AIQS only connect a start module on the `Pick` action and a stop module on the `Drop` action. The DPS and HBW however can independently Pick and Drop without any ongoing action in between, so both `Pick` and `Drop` actions have their own implicit start and stop control.
+
+For the further processing we then also redefine the following step modules as runs composed with their implicit control step:
+
+#{
+  let generate_implicit_start_and_end_for = (module, start_act: "Pick", end_act: "Drop") => {
+    $& module #start_act &:= &#module "Start" bullet #module #start_act\ 
+    & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act &:= & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act bullet #module "End" #v(15pt)$
+  }
+
+  $#generate_implicit_start_and_end_for("DRILL") \
+  #generate_implicit_start_and_end_for("MILL") \
+  #generate_implicit_start_and_end_for("AIQS") \
+  #generate_implicit_start_and_end_for("DPS Pick", start_act: "", end_act: "") \
+  #generate_implicit_start_and_end_for("DPS Drop", start_act: "", end_act: "") \
+  #generate_implicit_start_and_end_for("HBW Pick", start_act: "", end_act: "") \
+  #generate_implicit_start_and_end_for("HBW Drop", start_act: "", end_act: "") $
+}
+
+Since runs can be composed the same way individual step modules can, we do not require further differentiation and can assume from now on, that the starting and stopping "steps" can be composed via the `Next Module Ready` place.
+
+#include "figures/all_implicit_control.typ"

@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.0": canvas, draw
 
-#figure(caption: "Direct Module Interaction Modelling Approach")[
+#figure(caption: "Direct Module Interaction Modelling Approach", placement: none)[
 
 #align(center)[
   #scale(x: 80%, y: 80%, reflow: true)[#canvas({
@@ -8,8 +8,8 @@
 
     // 1. GRID VARIABLES
     // Adjust these to make the box wider or taller
-    let start-x = 6
-    let end-x = 12
+    let start-x = 5.5
+    let end-x = 12.5
     let top-y = 2
     let bottom-y = -1.5
 
@@ -32,7 +32,7 @@
     )
 
 
-    content((6, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Finish \ MILL \ Drop])
+    content((start-x, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Finish \ MILL \ Drop])
 
 
     content((9,0), name: "step3", frame: "rect", fill: white, stroke: 2pt, padding: 0.4, align(center)[MILL then \ DRILL])
@@ -45,11 +45,10 @@
     // Connect any named node to any other named node
 
     line("place1", "step3.west", name: "edge4", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge4", [#v(12pt) x])
 
     // Failure case
     line("step3", "out3", name: "edge5", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge5", [#v(12pt) x])
+
   })
 ]]
 ] <direct-connect-drill-mill-step>

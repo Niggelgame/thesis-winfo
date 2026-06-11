@@ -142,9 +142,9 @@
 
     // 5. OUTPUTS (Right Edge)
     // Placed at X = end-x so they straddle the right border perfectly
-    content((end-x, 1.5), name: "out2", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[AGV at \ `MOD`])
+    content((end-x, -1.5), name: "out2", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[AGV at \ `MOD`])
 
-    content((end-x, -1.5), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ Failed])
+    content((end-x, 1.5), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ Failed])
 
     // 6. EDGES
     // Connect any named node to any other named node

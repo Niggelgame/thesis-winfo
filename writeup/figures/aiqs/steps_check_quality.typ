@@ -25,7 +25,7 @@
         "bg.north-east", 
         anchor: "north-east", 
         padding: 0.2, 
-        text(size: 11pt)[step *AIQS check quality*]
+        text(size: 11pt)[step *AIQS Check*]
       )
 
       // 3. INPUTS (Left Edge)
@@ -74,12 +74,12 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *AIQS checked quality*]
+      text(size: 11pt)[step *AIQS Checked*]
     )
 
     content((6, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[AIQS \ Checking])
 
-    content((9, 0), name: "step2", frame: "rect", fill: white, stroke: 2pt, padding: 0.4, align(center)[AIQS \ Checked \ Quality])
+    content((9, 0), name: "step2", frame: "rect", fill: white, stroke: 2pt, padding: 0.4, align(center)[AIQS \ Checked])
 
     // 5. OUTPUTS (Right Edge)
     // Placed at X = end-x so they straddle the right border perfectly
@@ -97,7 +97,7 @@
   })
 ]]
 
-#figure(caption: "AIQS Check Quality steps")[
+#figure(caption: "AIQS Check Quality steps", placement: none)[
 
 #grid(
   columns: (1fr, 1fr),
@@ -133,7 +133,7 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *AIQS check failed*]
+      text(size: 11pt)[step *AIQS Check Failed*]
     )
 
 
@@ -144,7 +144,7 @@
 
     // 5. OUTPUTS (Right Edge)
     // Placed at X = end-x so they straddle the right border perfectly
-    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ failed])
+    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ Failed])
 
     // 6. EDGES
     // Connect any named node to any other named node

@@ -97,7 +97,7 @@
   })
 ]]
 
-#figure(caption: "Implicit Control of Mill to Drill steps")[
+#figure(caption: "Implicit Control of Mill to Drill steps", placement: none)[
 
 #grid(
   columns: (1fr, 1fr),

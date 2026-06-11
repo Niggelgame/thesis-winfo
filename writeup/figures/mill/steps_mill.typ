@@ -25,7 +25,7 @@
         "bg.north-east", 
         anchor: "north-east", 
         padding: 0.2, 
-        text(size: 11pt)[step *MILL mill*]
+        text(size: 11pt)[step *MILL Mill*]
       )
 
       // 3. INPUTS (Left Edge)
@@ -41,10 +41,8 @@
       // 6. EDGES
       // Connect any named node to any other named node
       line("in1", "step1", name: "edge1", mark: (end: ">", fill: black), stroke: 2pt)
-      content("edge1", [#v(12pt) x])
       
       line("step1", "place1", name: "edge2", mark: (end: ">", fill: black), stroke: 2pt)
-      content("edge2", [#v(12pt) x])
     })
   ]]
 
@@ -74,7 +72,7 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *MILL milled*]
+      text(size: 11pt)[step *MILL Milled*]
     )
 
     content((6, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[MILL \ Milling])
@@ -88,12 +86,8 @@
     // 6. EDGES
     
     line("place1", "step2", name: "edge3", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge3", [#v(12pt) x])
-
-
     
     line("step2", "out1", name: "edge6", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge6", [#v(12pt) x])
   })
 ]]
 
@@ -133,7 +127,7 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *MILL mill failed*]
+      text(size: 11pt)[step *MILL Mill Failed*]
     )
 
 
@@ -144,17 +138,15 @@
 
     // 5. OUTPUTS (Right Edge)
     // Placed at X = end-x so they straddle the right border perfectly
-    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ failed])
+    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Order \ Failed])
 
     // 6. EDGES
     // Connect any named node to any other named node
 
     line("place1", "step3.west", name: "edge4", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge4", [#v(12pt) x])
 
     // Failure case
     line("step3", "out3", name: "edge5", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge5", [#v(12pt) x])
   })
 ]]
 ] <mill-mill-steps>

@@ -90,7 +90,7 @@ Composition of net modules is defined via the composition of modules and produce
 To model the discrete stepwise behaviour of processes, we define _step modules_, which only ever include a single _event_ and the states it affects. Speaking in terms of net modules, every step module only contains *one transition*.
 
 
-#todo[Do we really need the "disjoint" requirement? Do we want to allow places not part of transitions?]
+#todo[Do we really need the "disjoint" requirement? (it should work for our stuff) Additionally, do we want to allow places that are not part of transitions?]
 #definition("Step Module")[
   Let $M = (P, {t}; E)$ be a net module with disjoint interfaces $"*"M$ and $M"*"$ with $P = "*"M union M"*"$ such that for each $p in P$ holds: $(p, t) in E$ iff $p in "*"M$, and $(t, p) in E$ iff $p in M"*"$. Then $M$ is a _step module_. 
 ]
