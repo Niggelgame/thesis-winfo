@@ -198,7 +198,7 @@ For the further processing we then also redefine the following step modules as r
 #{
   let generate_implicit_start_and_end_for = (module, start_act: "Pick", end_act: "Drop") => {
     $& module #start_act &:= &#module "Start" bullet #module #start_act\ 
-    & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act &:= & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act bullet #module "End" #v(15pt)$
+    & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act &:= & module#{if end_act == "" {if module.ends-with("Drop") { "ped"} else {"ed"}} else { " "}}#end_act bullet #module "End" #v(25pt)$
   }
 
   $#generate_implicit_start_and_end_for("DRILL") \
@@ -210,6 +210,6 @@ For the further processing we then also redefine the following step modules as r
   #generate_implicit_start_and_end_for("HBW Drop", start_act: "", end_act: "") $
 }
 
-Since runs can be composed the same way individual step modules can, we do not require further differentiation and can assume from now on, that the starting and stopping "steps" can be composed via the `Next Module Ready` place.
+Since runs can be composed the same way individual step modules can, we do not require further differentiation and can *assume from now on, that the starting and stopping "steps" can be composed via the `Next Module Ready` place*.
 
 #include "figures/all_implicit_control.typ"
