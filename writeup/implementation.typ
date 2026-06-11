@@ -1,4 +1,5 @@
 #import "@preview/benplate:0.1.0": note, todo
+#import "lib.typ": *
 
 = Implementation<implementation>
 
@@ -52,9 +53,25 @@ Lastly, we perform a random split of our tokenized traces into 7 training and 3 
 
 The two tokenized trace sets are then written to two files. We ensure, that from now on the model training process does not interact with the validation data.
 
+#pagebreak()
+
 == Heraklit Prefix Checker
 
+In #ref_def("Correct Prediction") we define what constitutes a correct prediction based on potential next steps (#ref_def("Next Step")). This definition, while easily understandable, has the caveat of not being written in a computationally simple way. 
 
+Following the definition directly, given a _reference_ Heraklit run, and a second _checker_ Heraklit run, to check whether the _checker_ run is a prefix of the _reference_ run, we would need to model all possible suffixes and then check, whether they are equal. 
+
+However, by the composition calculus (#ref_def("Graph Composition")) we know that the two sequences of compositions are equal and represent the same run, if composition produces the same graph. Following from that, a _checker_ sequence of compositions is a prefix of a _reference_ sequence of compositions, if the composition graph of the _checker_ is a *graph prefix* of the _reference_ composition graph.
+
+We define $A$ as a *graph prefix* of $B$ , if the _initial nodes_ (here: nodes without incoming edges) of $A$ are a subset of the _initial nodes_ of $B$ and if $A$ from these _initial nodes_ is a subgraph of $B$. 
+
+We limit our initial nodes to only contain unique labels, as otherwise all possible initial node mappings must be explored, which is computationally expensive. This theoretical limit does not provide any limitations in practise, as proper runs on a single workpiece never contain multiple initial steps of the same type.
+
+#line()
+
+We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes.
+
+Thus, given a reference run $r$, a prefix $p$ of it and a prediction $n$ made by our model, we check the correctness of this prediction by using this tool, asking whether $p bullet n$ is a prefix of $r$.
 
 == Model Architecture 
 
