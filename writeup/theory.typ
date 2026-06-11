@@ -184,7 +184,7 @@ To make use of this definition, we first need to model a system by providing the
 #include "figures/theory/run_sample.typ"
 
 
-=== MQTT
+=== MQTT<mqtt-theory>
 
 MQTT is a client-server protocol using a publish/subscribe pattern. It is considered the most favorable connection pool for Internet of Things (IoT) applications @mqtt.
 

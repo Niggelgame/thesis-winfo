@@ -1,3 +1,5 @@
+#import "@preview/benplate:0.1.0": note, todo
+
 = Implementation<implementation>
 
 This chapter provides the technical details of the implementation of our process prediction technique with encompassing information on the data collection, preprocessing and on the architecture and training of the final model.
@@ -16,8 +18,43 @@ The implementation was tested on both _macOS 15.7_ and _Ubuntu Linux 24.04_. The
 
 == Data Collection and Preprocessing
 
-- split is valid, as all exeuctions are independent of another
-- want to extract all the steps required for the work piece
+In a first step, the data needs to be _extracted_ from the Fischertechnik APS. As described in  @mqtt-theory, MQTT consists of _publishers_ and _subscribers_, that communicate via a broker. We add an additional client to the broker by connecting a computer to the APS network, that runs a script that subscribes to all topics, using a wildcard subscription ("\*"). It will be therefore sent a copy of every message in the APS. 
+
+Whenever it then receives a message, the message is decoded, combined with the MQTT topic and the timestamp of the receiving computer, then dumped to a file in _JSON_ format. This format is chosen as the messages sent through the broker are all in a _JSON_ format already.
+
+We *captured* the data of 10#note[change to the final number of runs] runs. Each run consists of a single workpiece being processed throughout the APS, from the insertion to the factory at the DPS up to either the successful delivery at the DPS or a failed quality control. 
+
+Before any further processing, all JSON log files are read, checked for valid JSON syntax and then *combined* into one dataset of around 60MB#note[change to final size]. Here we also extract the color of the processed piece and pass it into the metadata.
+
+Next, we perform some *preliminary filtering*, essentially removing the messages regarding two topics: The first one contains the raw image data of the camera mounted on the APS, wasting space in the logs. The second one removes a single action that makes sure a status LED is blinking. This removes 5298 and 1996 messages respectively, reducing the dataset size to only around 14MB. 
+
+The camera data could be interesting for future work, so we decided to still collect it, even though we will not make any use of them here.
+
+The next step contains the proper *preprocessing* of the trace data. Here, we analyse the messages themselves to *extract the tokens*, which represent the Heraklit steps modelled in @modelling. Note that these steps are assumed to already be implicitely composed with the control steps of @implicit-connect-steps.
+
+We can distinguish 3 different message types relevant to our modelling based on the MQTT topic:
+#pagebreak()
+
+- `module/v1/ff/<SERIAL>/order`: This topic contains messages from the CCU to the respective module with the serial number `<SERIAL>`. These *order messages* contain the instructions to a module to start a certain action.
+
+- `module/v1/ff/<SERIAL>/state`: This topic contains messages from the module with the serial number `<SERIAL>` to the CCU. These *state messages* are regularly transmitted and contain the state of an action in the module. 
+
+- `fts/v1/ff/<SERIAL>`: This topic contains all messages related to the *AGV* with serial number `<SERIAL>`. It is again split into `/order`and `/state` messages, however for our modelling only the AGV _orders_ are relevant. 
+
+We start by creating a mapping of serial numbers to module types, to handle the different module actions.
+We can then usually extract the start of a new action and thus the `Start X` step from our model through the module *order messages*. For the result of an action, we need to listen to the *state messages*, until we need to find one that describes the status of the module as finished or failed to extract the next correct step.
+
+Due to the QoS levels of MQTT and the retained messages of the APS MQTT broker, we need to apply some heuristics to filter out duplicate or old messages. This could have been partially avoided by also writing the MQTT `dup` flag of messages into the logs. However we would still need to figure out whether we received a message before or not regardless.
+
+The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the message the time was sent from a module, the time it was received, the module serial number and message IDs.
+
+Lastly, we perform a random split of our tokenized traces into 7 training and 3 validation#note[change to final numbers] traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose"), are not relevant, as all our executions in the APS are independent of another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time.
+
+The two tokenized trace sets are then written to two files. We ensure, that from now on the model training process does not interact with the validation data.
+
+== Heraklit Prefix Checker
+
+
 
 == Model Architecture 
 
