@@ -3,7 +3,7 @@
 = Introduction<introduction>
 
 
-Traditionally discovering knowledge about your business processes required combining estimates and manual data collection. This acquired knowledge would then be used to analyse, redesign and optimise said processes or to make process-external decisions @ppm26. This type of knowledge discovery is naturally error-prone and tends to be time-consuming.
+Traditionally discovering knowledge about business processes required combining estimates and manual data collection. This acquired knowledge would then be used to analyse, redesign and optimise said processes or to make process-external decisions @ppm26. This type of knowledge discovery is naturally error-prone and tends to be time-consuming.
 
 Nowadays, more and more businesses rely on enterprise systems to store highly detailed process execution information, based on sensoric outputs, workflow data and machine logs. By applying various process mining techniques to these datasets, crucial knowledge can be extracted @procmining16, which can then be used in multiple business process lifecycles @bpmlifecycle. During process _design_, analysis of historical data can provide comparison points, during process _monitoring_ outliers and bottlenecks can be detected. 
 
