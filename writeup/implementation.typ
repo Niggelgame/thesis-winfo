@@ -69,13 +69,32 @@ We limit our initial nodes to only contain unique labels, as otherwise all possi
 
 #line()
 
-We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes.
+We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes. This tools code is additionally published on GitHub#footnote[#link("https://github.com/Niggelgame/heraklit-equiv-checker/") _last accessed 11.06.2026_] to allow using it for further Heraklit-based process prediction projects.
 
 Thus, given a reference run $r$, a prefix $p$ of it and a prediction $n$ made by our model, we check the correctness of this prediction by using this tool, asking whether $p bullet n$ is a prefix of $r$.
 
 == Model Architecture 
 
--> embedder
+For next-event predictions, we use the Transformer architecture as presented by #cite(<attention>, form: "prose") and explained in @transformer.
+#pagebreak()
+
+As tokens, we use the steps defined in @modelling, plus some additional tokens:
+
+- `<PAD>`, `<BOS>`, `<EOS>`: These meta-tokens are required for the training of the transformer. `<PAD>` is used to allows training on sequences shorter than our context window, padding the remaining window out. `<BOS>` and `<EOS>` mark the _begin_ and the _end_ of the sequence of tokens, letting the model stop its prediction when the process is over.
+- `<COLOR RED>`, `<COLOR WHITE>`, `<COLOR BLUE>`: These tokens are inserted at the beginning of a sequence to let the model know about what kind of workpiece is currently processed. This allows learning the different process configurations for different workpiece colors without creating much overhead.
+
+The hyperparameters of our model architecture are chosen using cross-validation on k-folds of the training data, as discussed in @transformer. We try to provide reasonable values for each hyperparameter, then iterate all combinations of these hyperparameters and choose the best model on the basis of a loss function. The values for the different hyperparameters we search though are:
+
+```python
+d_models = [16, 32]
+layers = [1, 2, 3]
+dropouts = [0.1, 0.2, 0.3]
+learning_rates = [3e-3, 1e-3]
+```
+
+The loss function represents the sum of the embedded distances between the real next token and the predicted probability distribution of tokens.
+
+Further training details are discussed in the following section.
 
 == Training Details
 
