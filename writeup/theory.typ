@@ -243,6 +243,15 @@ After the transformer blocks, we need to extract the next token. Similarly to th
 
 We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource are not a concern for us. 
 
+=== Model Training
+
+Training not only consists of fitting our parameters to the training token sequences. Before training, we need to perform a hyperparameter selection. 
+
+Besides the model parameters from above, we need to also select parameters for the deep learning optimizer, in this case the AdamW optimizer @adamw-optimizer, which builds upon the Adam optimizer @adam-optim, improving its generalization performance by decoupling the weight decay. Parameterwise it takes a learning rate, the weight decay, two running average parameters $beta_1, beta_2$ and a numerical stability parameter $epsilon$. 
+
+Using cross validation on k-fold splits of the training data, we search through a subset of hyperparameters. These hyperparameters are based on the model defaults and changed according to the training data size we provide.
+
+
 === Technical requirements for Process Prediction
 
 Some approaches to apply the transformer architecture rely on natural language to express the processes steps @llm-proc-pred. However, this approach requires the model not only learning things about the process, but also understanding the language.
