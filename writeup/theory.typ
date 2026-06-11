@@ -247,7 +247,7 @@ We acknowledge that there are further optimizations to this architecture since t
 
 Training not only consists of fitting our parameters to the training token sequences. Before training, we need to perform a hyperparameter selection. 
 
-Besides the model parameters from above, we need to also select parameters for the deep learning optimizer, in this case the AdamW optimizer @adamw-optimizer, which builds upon the Adam optimizer @adam-optim, improving its generalization performance by decoupling the weight decay. Parameterwise it takes a learning rate, the weight decay, two running average parameters $beta_1, beta_2$ and a numerical stability parameter $epsilon$. 
+Besides the model parameters from above, we need to also select parameters for the deep learning optimizer, in this case the AdamW optimizer @adamw-optimizer, which builds upon the Adam optimizer @adam-optim, improving its generalization performance by decoupling the weight decay. Parameterwise it takes a learning rate $d_("lr")$, the weight decay, two running average parameters $beta_1, beta_2$ and a numerical stability parameter $epsilon$. 
 
 Using cross validation on k-fold splits of the training data, we search through a subset of hyperparameters. These hyperparameters are based on the model defaults and changed according to the training data size we provide.
 

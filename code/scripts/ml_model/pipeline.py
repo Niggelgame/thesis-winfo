@@ -300,7 +300,7 @@ def cross_validate_and_select(
         avg_top1 = sum(m.get("top1", 0.0) for m in fold_metrics) / len(fold_metrics)
         avg_topk = sum(m.get("topk", 0.0) for m in fold_metrics) / len(fold_metrics)
 
-        score = avg_top1 + 0.5 * avg_topk
+        score = avg_top1 + 0.2 * avg_topk
 
         result = {
             "config": cfg.__dict__,

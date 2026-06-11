@@ -83,7 +83,29 @@ As tokens, we use the steps defined in @modelling, plus some additional tokens:
 - `<PAD>`, `<BOS>`, `<EOS>`: These meta-tokens are required for the training of the transformer. `<PAD>` is used to allows training on sequences shorter than our context window, padding the remaining window out. `<BOS>` and `<EOS>` mark the _begin_ and the _end_ of the sequence of tokens, letting the model stop its prediction when the process is over.
 - `<COLOR RED>`, `<COLOR WHITE>`, `<COLOR BLUE>`: These tokens are inserted at the beginning of a sequence to let the model know about what kind of workpiece is currently processed. This allows learning the different process configurations for different workpiece colors without creating much overhead.
 
-The hyperparameters of our model architecture are chosen using cross-validation on k-folds of the training data, as discussed in @transformer. We try to provide reasonable values for each hyperparameter, then iterate all combinations of these hyperparameters and choose the best model on the basis of a loss function. The values for the different hyperparameters we search though are:
+The hyperparameters of our model architecture are chosen using cross-validation on k-folds of the training data, as discussed in @transformer. We try to provide reasonable values for each hyperparameter, then iterate all combinations of these hyperparameters and choose the best model on the basis of a loss function. 
+
+The loss function represents the sum of the embedded distances between the real next token and the predicted probability distribution of tokens.
+
+Further training details are discussed in the following section.
+
+== Training Details
+
+The model is generally trained in a set amount of _epochs_. Each epoch, the training data is provided to the model to compute the _loss_, a metric describing a _distance_ of the prediction to the correct results. The lower the loss, the better. 
+
+We use a *cross-entropy loss* function, that always sets the loss to for a position 0 if the next token is a padding token. The cross entropy loss creates strong gradients for the optimizer by relying on a negative logarithmic of the probability assigned, if the prediction is incorrect, which results in exponential penalty and thus loss for incorrect predictions. 
+
+After computing the loss, we perform a `pytorch` backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our models, hopefully lowering the loss.
+
+During training of our model, we add a small _dropout_ layer into our model after the positionally embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
+
+This process is repeated for a fixed set of epochs, until a certain loss is reached or until not enough loss progress is achieved.
+
+=== Selecting Hyperparameters
+
+Before training the actual model, we need to select its hyperparameters. 
+
+The values for the different hyperparameters we search though are:
 
 ```python
 d_models = [16, 32]
@@ -92,12 +114,33 @@ dropouts = [0.1, 0.2, 0.3]
 learning_rates = [3e-3, 1e-3]
 ```
 
-The loss function represents the sum of the embedded distances between the real next token and the predicted probability distribution of tokens.
+On each possible combinational set of parameters we perform a *k-fold cross-validation*. This is a standard technique to avoid overfitting while just using training data. The data set is split into $k$ equally sized groups of data, the so-called _folds_, then we train the model $k$ times, always using $k-1$ folds for training, and one for validation. This technique is especially relevant for the small dataset we have, as we can not be sure that a single random split properly distributes the data into fair training and validation sets. We chose `k = 4`.
 
-Further training details are discussed in the following section.
+During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model, that has found good parameters early on, or such a bad model configuration, that training it further probably does not produce much of an impact either. 
 
-== Training Details
+During cross validation we also measure the performance of the combination of most probable 3 output tokens, producing higher `top_k` performance if any one of these top 3 tokens are correct. 
 
-training: Adam optimizer, regularization using dropout.
+We then score the different configurations. We do not only consider the average model correctness, but also include a small factor of the `top_k` performance. While we want to optimize for the _one_ most probable output in the final trained model, we want the architecture to support producing sensible other options. This way of scoring rewards fully correct models the most, as providing a correct top hit implies the `top_k` also contain a correct hit. But it also chooses a model that produces good overall second or third hit performance over one that only has a the same top hit performance with bad second or third hit performance.
 
-time to train
+The highest scoring configuration is then selected as the one the with which we then perform the training on the full data.
+
+As we are training full models for each model configuration, this process is the most time-consuming, taking around 3 minutes on the previously described MacBook configuration. The final selected configuration is the following:
+
+$
+  &d_("ctx") &= &128 \
+  &d_("lr") &= &0.003 \
+  &d_("weight_decay") &= &0.01 \
+  &d_("dropout") &= &0.2 \
+  &d_("model")&=&32 \
+  &d_h &=&4 \
+  &d_("layer") &= &3 \
+  &d_("dim_ff")&= &128
+$<configuration>
+
+=== Training Results
+
+The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.
+
+A more interesting statistic is the top hit correctness rate of _only_ 89.2%, the top three hit correctness rate being 98.4%. While this might seem surprisingly low for a model we just trained, we need to keep in mind the dropout layer we explicitely added to the training process. 
+
+In @evaluation we will use the split off validation set to perform some different evaluations on the now obtained model.
