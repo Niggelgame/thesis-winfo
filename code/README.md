@@ -4,5 +4,4 @@
 
 This directory contains all the code and relevant documentation to deploy the transformer network on the MQTT data of the Fischertechnik APS.
 
-To get started with using this code, go into the [data collection directory](scripts/data-collection/README.md).
-
+To get started with using the scripts, go into the [scripts directory](scripts/README.md).
