@@ -10,14 +10,18 @@ from shared import predict_next, check_correct_prefix, RANDOM_SEED, VOCAB
 
 
 
-def predict_single(artifacts_dir, trace, color, ins_rate):
+def predict_single(artifacts_dir, trace, color, ins_rate, drop_first):
     correct = 0
     total = 0
     for i in range(2, len(trace)):
         predict_from = trace[:i]
 
-        # never insert after last element
-        with_inserted = list(predict_from)[:-1]
+        if drop_first:
+            # allow insertion at all positions
+            with_inserted = list(predict_from)
+        else:
+            # never insert after last element
+            with_inserted = list(predict_from)[:-1]
         indicee = [i for i, e in enumerate(with_inserted)]
         ins_count = math.ceil(ins_rate * len(predict_from))
         suffixed_indicee = list(random.sample(indicee, ins_count))
@@ -26,13 +30,19 @@ def predict_single(artifacts_dir, trace, color, ins_rate):
             added = random.choice(VOCAB)
             # add before, as otherwise not inserted at the original position
             with_inserted.insert(before + i + 1, added)
-        with_inserted.append(predict_from[-1])
+        
+        if not drop_first:
+            # re-add the last event
+            with_inserted.append(predict_from[-1])
 
         next = predict_next(artifacts_dir, color, with_inserted)
         predict_from.append(next)
 
         total += 1
-        is_prefix = check_correct_prefix(trace, predict_from)
+        try:
+            is_prefix = check_correct_prefix(trace, predict_from)
+        except Exception:
+            is_prefix = False
         if is_prefix:
             correct += 1
         else:
@@ -58,7 +68,7 @@ def evaluate(args):
     for insertion_rate in insertion_rates:
         stats = []
         for trace in trace_tokens:
-            stats.append(predict_single(args.artifacts_dir, trace["tokens"], trace["color"], insertion_rate))
+            stats.append(predict_single(args.artifacts_dir, trace["tokens"], trace["color"], insertion_rate, args.drop_first))
         
         print(f"InsertionRate: {insertion_rate:.0%}\nAccuracy by trace:")
         total = 0
@@ -84,6 +94,7 @@ def evaluate(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser("simple_scenario")
+    parser.add_argument("--drop-first", action="store_true")
     parser.add_argument("--artifacts-dir", type=str, default="../../data/model/artifacts")
     parser.add_argument("--validation-trace-paths", type=str, default="../../data/model/val_tokens.json")
 

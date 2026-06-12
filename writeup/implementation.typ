@@ -71,12 +71,13 @@ We limit our initial nodes to only contain unique labels, as otherwise all possi
 
 We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes. This tools code is additionally published on GitHub#footnote[#link("https://github.com/Niggelgame/heraklit-equiv-checker/") _last accessed 11.06.2026_] to allow using it for further Heraklit-based process prediction projects.
 
+The tool also contains a neat feature to display the composed run graphs of the two compared runs, leaving out the petri net places. This visualization can help to understand the composition and why predictions might be deemed incorrect.
+
 Thus, given a reference run $r$, a prefix $p$ of it and a prediction $n$ made by our model, we check the correctness of this prediction by using this tool, asking whether $p bullet n$ is a prefix of $r$.
 
 == Model Architecture 
 
 For next-event predictions, we use the Transformer architecture as presented by #cite(<attention>, form: "prose") and explained in @transformer.
-#pagebreak()
 
 As tokens, we use the steps defined in @modelling, plus some additional tokens:
 
@@ -97,7 +98,7 @@ We use a *cross-entropy loss* function, that always sets the loss to for a posit
 
 After computing the loss, we perform a `pytorch` backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our models, hopefully lowering the loss.
 
-During training of our model, we add a small _dropout_ layer into our model after the positionally embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
+During training of our model, we add a small _dropout_ layer into our model after the positionally embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behaviour has been validated in previous work also related to process prediction @dropout-ppm-lstm. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
 
 This process is repeated for a fixed set of epochs, until a certain loss is reached or until not enough loss progress is achieved.
 
@@ -139,7 +140,7 @@ $<configuration>
 
 === Training Results
 
-The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.
+The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.#note[final values. maybe add a little graph with the progression over epochs?]
 
 A more interesting statistic is the top hit correctness rate of _only_ 89.2%, the top three hit correctness rate being 98.4%. While this might seem surprisingly low for a model we just trained, we need to keep in mind the dropout layer we explicitely added to the training process. 
 

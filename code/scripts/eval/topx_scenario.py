@@ -1,17 +1,19 @@
 import json
+import random
 
 from argparse import ArgumentParser
 
-from shared import predict_next_topk, check_correct_prefix
+from shared import predict_next_topk, predict_next_topk_random, check_correct_prefix, RANDOM_SEED
 
-TOP_X = 2
-
-def predict_single(artifacts_dir, trace, color, topk):
+def predict_single(random, artifacts_dir, trace, color, topk):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        next = predict_next_topk(artifacts_dir, color, predict_from, topk)
+        if random:
+            next = predict_next_topk_random(topk)
+        else:
+            next = predict_next_topk(artifacts_dir, color, predict_from, topk)
 
         total += 1
 
@@ -20,7 +22,10 @@ def predict_single(artifacts_dir, trace, color, topk):
         for i in range(topk):
             predict_from.append(next[i]["token"])
             
-            is_prefix = check_correct_prefix(trace, predict_from)
+            try:
+                is_prefix = check_correct_prefix(trace, predict_from)
+            except Exception:
+                is_prefix = False
             if is_prefix:
                 ever_correct = True
                 break
@@ -47,9 +52,10 @@ def evaluate(args):
         {"color": trace["color"], "tokens": [ev["token"] for ev in trace["events"]]} for trace in traces]
 
 
+    random.seed(RANDOM_SEED)
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.artifacts_dir, trace["tokens"], trace["color"], TOP_X))
+        stats.append(predict_single(args.random, args.artifacts_dir, trace["tokens"], trace["color"], args.top_x))
     
     print("Accuracy by trace:")
     total = 0
@@ -67,6 +73,8 @@ def evaluate(args):
 
 if __name__ == "__main__":
     parser = ArgumentParser("simple_scenario")
+    parser.add_argument("--random", action='store_true')
+    parser.add_argument("--top-x", type=int, default=2)
     parser.add_argument("--artifacts-dir", type=str, default="../../data/model/artifacts")
     parser.add_argument("--validation-trace-paths", type=str, default="../../data/model/val_tokens.json")
 

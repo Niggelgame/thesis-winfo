@@ -2,13 +2,67 @@
 
 Evaluation consists of multiple evaluated scenarios. 
 
-1. Predict in previously unseen trace sequences. Check validity with `heraklit-equiv-checker`.
-    - Just predict one next token and check validityy
-    - Check up to X next tokens for validity
-    - Predict Next based on top 2 or 3
-2. Remove some events from the traces and predict on them, then do check with original trace
-3. Add some completely unrelated events into the traces and predict on them, then check for validity with original trace
-
 ## Simple scenario
 
-`--artifacts-dir ../../data/model/artifacts`
+Run the simple scenario just predicting the next token using 
+
+```shell
+uv run simple_scenario.py
+```
+
+To create the baseline with random steps, run 
+```shell
+uv run simple_scenario.py --random
+```
+
+## Top X scenario
+
+Run the general top X scenario predicting and checking x next token options using
+
+```shell
+uv run topx_scenario.py
+```
+
+Again, to use the random baseline, use
+
+```shell
+uv run topx_scenario.py --random
+```
+
+To change the number of top n options to check, provide the additional `--top-x` parameter.
+
+```shell
+uv run topx_scenario.py --top-x N
+```
+
+## Insert Random Scenario
+
+Run the random insertion generalisation scenario using
+
+```shell
+uv run insert_random_scenario.py
+```
+
+To run it with allowing insertion after the last step, run
+
+```shell
+uv run insert_random_scenario.py --drop-first
+```
+
+## Drop Random Scenario
+
+Run the scenario randomly dropping events using 
+
+```shell
+uv run random_dropped_scenario.py
+```
+
+# Integrity
+
+All randomness within these evaluations have fixed the seed of `random` to ensure deterministic test execution.
+
+Timing measurements are extracted on the simple scenario
+
+```shell
+uv run simple_scenario.py --time
+```

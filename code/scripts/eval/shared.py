@@ -1,7 +1,9 @@
 import os
 import sys
-import importlib
+import random
+import time
 from pathlib import Path
+from contextlib import contextmanager
 
 from heraklit_equiv_checker.checker import check_equivalence_step_file
 from ml_model.main import predict_wrap
@@ -69,6 +71,32 @@ VOCAB = [
     "AIQS Checked",
     "AIQS Check Failed",
 ]
+
+# timer helper function -> provides time in ns
+@contextmanager
+def timer():
+    start = time.perf_counter_ns()
+    yield lambda: time.perf_counter_ns() - start
+
+# randomly picks an element from the vocab
+# ensure you have set the random seed before calling this function for 
+# deterministic evaluation
+def predict_next_random():
+    return random.choice(VOCAB)
+
+
+# randomly picks topk element from the vocab
+# ensure you have set the random seed before calling this function for 
+# deterministic evaluation
+def predict_next_topk_random(topk):
+    # probabilty set to -1 to not accidentally compute on it
+
+    # the same prediction is not allowed multiple times
+    tokens = random.sample(VOCAB, topk)
+
+    return [
+        {"token": tok, "probability": -1} for tok in tokens
+    ]
 
 # returns [{"token": <>, "probability": <>}]
 def predict_next_topk(artifacts_dir, color, steps, topk):
