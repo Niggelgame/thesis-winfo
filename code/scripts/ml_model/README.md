@@ -44,6 +44,12 @@ From the validation data set one can now extract the simple token traces first u
 uv run extract_steps.py ../../data/model/val_tokens.json ../../data/eval/traces
 ```
 
+and also extract the token occurences using
+
+```shell
+uv run extract_training_token_occurences.py ../../data/model/train_tokens.json ../../data/eval/training_trace_occurences.json
+```
+
 which can now be individually evaluated with using [the eval suite](../eval/README.md).
 
 
