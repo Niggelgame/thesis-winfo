@@ -15,7 +15,7 @@ In the following we will refer to our model as a function $(n_1, ..., n_k) = "pr
 
 === Simple Next Step Check<simple-scen>
 
-For each run $R = s_1 bullet ... bullet s_n$, where $s_j$ is a step token, we take all prefixes $P_i = s_1 bullet ... bullet s_i$ with $1 <= i < n$. We then let our model predict the most probable next step $n_i = "predict"(P_i, 1)$. If $n_i = s_(i+1)$, we set $c_i = 1$, else $c_i * 0$
+For each run $R = s_1 bullet ... bullet s_n$, where $s_j$ is a step token, we take all prefixes $P_i = s_1 bullet ... bullet s_i$ with $1 <= i < n$. We then let our model predict the most probable next step $n_i = "predict"(P_i, 1)$. If $n_i = s_(i+1)$, we set $c_i = 1$, else $c_i = 0$
 
 We calculate the _run accuracy_ metric for each run as $A_R = 1/(n-1) sum_(i=1)^(n-1)c_i$, dividing the number of correctly predicted steps by the number of totally predicted steps.
 
@@ -31,7 +31,7 @@ We also provide an empirical predictor $"predict"''(R, k)$, that processes the i
 
 The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 
-Our model achieved an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process.
+Our model achieved an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process. This proves the model is learning about the sequential and causal relationships, and not only mimicking the frequency of contributions.
 
 It is notable that this accuracy is higher than the accuracy measured during training, we expected this behavior due to the disabled dropout layer during evaluation.
 
@@ -54,7 +54,7 @@ For comparison, even with $k=10$, the random baseline only achieves an accuracy 
 
 While our general baseline evaluation cases in @baseline are measured on traces not seen during training, and we are using cross-validation and dropout to reduce overfitting and guide towards generalisation, we want to ensure that our model can cope with unseen behaviour not found within the original dataset. 
 
-We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected.//#note[Duplicate scenario?] 
+We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected, thus robustness when dealing with such symptoms is desired.//#note[Duplicate scenario?] 
 We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
 An additional experimental evaluation to test our generalisation performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing mulitple workpieces at once.
@@ -108,7 +108,7 @@ This suggests that the model highly depends on the last prefix event being the c
 
 To simulate dropped messages, we can simply drop random events from our prefix traces before prediction. The percentage of dropped messages is controlled by a parameter $p$. We validate the prediction outputs again by appending the next step to the _original_, pre-drop prefix and checking for correctness.
 
-For the dropping of random events we explicitly do not consider the case of dropping the last event, since the model would then possibly predict the last event itself. Due to our validation emchanism this would duplicate the last token, immediatly treating the model output as incorrect, even though the model output on the given sequence would be perfectly correct.
+For the dropping of random events we explicitly do not consider the case of dropping the last event, since the model would then possibly predict the last event itself. Due to our validation emchanism this would duplicate the last token, immediately treating the model output as incorrect, even though the model output on the given sequence would be perfectly correct.
 
 By dropping $p$ parts of the run, but the last event, the accuracy reduces only reduces slowly compared to the scenario in @p-progression. Surprisingly, even when dropping 50% of the events, the accuracy remains at \~*81%* from \~91%. The plot of accuracy can be seen in @p-dropout. 
 
@@ -166,9 +166,9 @@ Thus the accuracy, while seeming low, matches the expectations due the limits ex
 
 Predictive process monitoring is mostly done in an online setting, for which both the _resource requirements_ and the _amount of time_ required for singular predictions are relevant factors. 
 
-Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benachmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_#note[final number!] floating point parameters, thus VRAM with a fully loaded model usage is limited as well.
+Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_#note[final number!] floating point parameters, thus VRAM with a fully loaded model usage is limited as well.
 
-The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times, later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction, however the current infrastructure does not provide the functionality for consistently keeeping the model loaded.
+The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times, later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction, however the current infrastructure does not provide the functionality for consistently keeping the model loaded.
 
 Combining these two results, we can infer that online usage is certainly possible with this model, even though it would require some infrastructure build-up to support live translation of the MQTT events into the steps, and pipelining that into the model.
 

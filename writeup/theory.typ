@@ -11,13 +11,13 @@ This includes defining the Heraklit modeling framework used to model the factory
 
 Heraklit @heraklit is a process modelling framework designed to thrive in a discrete digital world, providing a formal foundation for interaction-driven process management of digital and cyber-physical systems.
 
-We will not provide an in-depth explaination of Heraklit, but will focus on an overview of the most important points relevant to this work. In general, Heraklit builds upon three main characteristics:
+We will not provide an in-depth explanation of Heraklit, but will focus on an overview of the most important points relevant to this work. In general, Heraklit builds upon three main characteristics:
 
 - *Architecture*: Models can be composed and refined, allowing building large systems using the _composition calculus_.
-- *Dynamics*: Actions are performe using local state, and dynamics between actions using causal relationships.
-- *Statics*: Items and data and operations on them are treated as first class citizens.
+- *Dynamics*: Actions are performed using local state, and dynamics between actions using causal relationships.
+- *Statics*: Items, data and operations on them are treated as first class citizens.
 
-The _composition calculus_ of _modules_ and causal modelling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our usecase, definitions are not necessarily complete and proofs are left our. They can be read upon in @heraklit.
+The _composition calculus_ of _modules_ and causal modelling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our usecase, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
 
 Heraklit modules are conceptually modelled using graphs, with inner vertices and outer vertices. These outer vertices contribute to the _interface_ of a module and are the external connection points of a module.
 
@@ -120,7 +120,7 @@ This concludes the most necessary basic Heraklit concepts necessary for the our 
 
 == Process Prediction
 
-Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event-logs of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identfy the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensoric data, can also be attached to an event.
+Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event-logs of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensoric data, can also be attached to an event.
 
 Process prediction is concerned with predicting *possible outcomes* of ongoing traces. This prediction can be performed online, meaning while the execution of the process happens, such that unwanted outcomes can be prevented by preemptively changing the execution based on the prediction. 
 
@@ -196,13 +196,13 @@ It provides three levels of Quality of Service (QoS), which can deal differently
 2. QoS 1: At least once. The message is repeatedly sent to all subscribers that have not acknowledged the message yet, marking every message from the second send on using the `DUP` flag. The message is stored at the broker until all subscribers have received the message.
 3. QoS 2: Exactly once. Similarly to QoS 1 the broker stores the message and resends it. However the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
 
-The Fischertechnik APS uses MQTT as its main channel of communication between the differnt production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
+The Fischertechnik APS uses MQTT as its main channel of communication between the different production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
 
-Both cases result in duplicate messages from the broker, which need to be filtered out during data processing. The specific MQTT broker can also _retain_ messages of QoS 1, which redistributes the latest message from a topic to newly connected clients, even if that message was published before. These messsages need filtering as well, as they can incorrectly influence the assumed state.
+Both cases result in duplicate messages from the broker, which need to be filtered out during data processing. The specific MQTT broker can also _retain_ messages of QoS 1, which redistributes the latest message from a topic to newly connected clients, even if that message was published before. These messages need filtering as well, as they can incorrectly influence the assumed state.
 
 == Transformer<transformer>
 
-Over the last decade, research mostly identified deep-learning approaches as an advancement over traiditional machine learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorial variables, tradition machine learning approaches start to show their weaknesses @rf-bad.
+Over the last decade, research mostly identified deep-learning approaches as an advancement over traditional machine learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorial variables, tradition machine learning approaches start to show their weaknesses @rf-bad.
 
 While using Long Short-Term-Memory models (LSTMs), a special version of recurring neural networks (RNN) showed it successes @lstmref1 @lstmref2, later state-of-the-art models use the transformer architecture @transformerpred1 @transformerpred2.
 
@@ -212,7 +212,7 @@ First presented in @attention, this deep-learning based model architecture revol
 
 The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focusses on creating an _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the both structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focussed on next token generation only. 
 
-As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure that sub-module.
+As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that sub-module.
 
 The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum amount of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a traininable linear layer, essentially the index of the tokens in the vocab to the lower dimension, _embedding_ it.
 Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as will be further variables written as $d_("param")$, and need to be chosen before training.
@@ -221,7 +221,7 @@ Next follows a _posititional encoding_, where fixed geometrically decreasing fre
 
 The now properly embedded sequence is now passed through $d_("layer")$ repetitions of the transformer blocks. They each again consist of three sublayers, connected each by a layer normalization. Assuming input $x$ to a sublayer and $"Sublayer"(x)$ the function performed by the sublayer, the output is $"LayerNorm"(x + "SubLayer"(x))$, to keep the output stable without any unexpected outliers complicating the gradient descent during training.
 
-Two of the sublayers are _Multi-Head Attention Layers_. Here the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The resuls are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
+Two of the sublayers are _Multi-Head Attention Layers_. Here the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V in RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The results are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
 
 #align(center)[$"Attention"(Q_i, K_i, V_i) = "softmax"("mask"(Q_i K_i^T)/(sqrt(d_k))))V_i$]
 
@@ -233,7 +233,7 @@ This computation can be intuitively understood as follows.
 4. $"softmax"$ itself performs a rowwise normalisation, such that all rows represent a random distribution, i. e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
 5. Multiplying by $V_i$: $V_i$ contains the embedding of the information that is present, if the query and key match. Thus the multiplication linearly scales that information within the embedding.
 
-The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatinated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
+The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatenated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
 
 The third sublayer of the transformer block is a simple 2-layer fully-connected feed-forward network with a ReLU activation function. The input and output layers have dimension $d_("model")$ and the inner layer $d_("dim_ff")$.
 
