@@ -3,7 +3,7 @@
 
 = Evaluation<evaluation>
 
-In this chapter we will first compare our prediction model with a random baseline, showing that our model is able to learn about the underlying process. We then evaluate different generalization capabilities of our model. 
+In this chapter we will first compare our prediction model with a random and an empirical baseline, showing that our model is able to learn about the underlying process. We then evaluate different generalization capabilities of our model. 
 
 == Baseline Comparisons<baseline>
 
@@ -25,11 +25,13 @@ We therefore calculate the _accuracy_ as
 
 $A = 1/(|"val"|) sum_(R in "val") A_R$
 
-We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a random next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps.
+We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a _random_ next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly.
+We also provide an empirical predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the datset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
-Our model achieved an accuracy of *91.07%*, highly outperforming the random baseline. This is a clear indicator that our model was able to learn properties the structure of our process.
+The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
+
+Our model achieved an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process.
 
 It is notable that this accuracy is higher than the accuracy measured during training, we expected this behavior due to the disabled dropout layer during evaluation.
 
@@ -41,9 +43,9 @@ By looking at the top $k$ options ordered by their probability instead of just t
 
 We can simply adapt our scenario definitions from above to predict the $k$ different steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$ and changing the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k n_(i,j) = s_(i+1)$ we set $c_i = 1$, else $c_i = 0$. The accuracy measure definitions can remain the same.
 
-With $k=2$, we can observe a top-k accuracy of our model of *100%*. The random baseline only predicts the top 2 events correctly with an accuracy of *5.36%*.
+With $k=2$, we can observe a top-k accuracy of *our model* of *100%*. The random baseline only predicts the top 2 events correctly with an accuracy of *5.36%*, the empirical baseline has a *10.71%* accuracy.
 
-For comparison, even with $k=10$, the random baseline only achieves an accuracy of 21.4%.
+For comparison, even with $k=10$, the random baseline only achieves an accuracy of 21.4%, the empirical baseline *57.14%*. 
 
 
 == Generalisation Performance
@@ -52,7 +54,8 @@ For comparison, even with $k=10$, the random baseline only achieves an accuracy 
 
 While our general baseline evaluation cases in @baseline are measured on traces not seen during training, and we are using cross-validation and dropout to reduce overfitting and guide towards generalisation, we want to ensure that our model can cope with unseen behaviour not found within the original dataset. 
 
-We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected.#note[Duplicate scenario?] We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
+We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected.//#note[Duplicate scenario?] 
+We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
 === Additional Random Events
 

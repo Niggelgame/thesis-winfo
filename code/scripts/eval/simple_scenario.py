@@ -3,16 +3,18 @@ import random
 
 from argparse import ArgumentParser
 
-from shared import predict_next, predict_next_random, check_correct_prefix, RANDOM_SEED, timer
+from shared import predict_next, predict_next_random, predict_next_occurence, check_correct_prefix, RANDOM_SEED, timer
 
 timings = []
 
-def predict_single(random, artifacts_dir, color, trace):
+def predict_single(random, occurency, artifacts_dir, color, trace):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        if random:
+        if occurency is not None: 
+            next = predict_next_occurence(occurency)
+        elif random:
             next = predict_next_random()
         else:
             with timer() as elapsed:
@@ -47,7 +49,7 @@ def evaluate(args):
     random.seed(RANDOM_SEED + 1)
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.random, args.artifacts_dir, trace["color"], trace["tokens"]))
+        stats.append(predict_single(args.random, args.occurency, args.artifacts_dir, trace["color"], trace["tokens"]))
     
     print("Accuracy by trace:")
     total = 0
@@ -76,6 +78,7 @@ def evaluate(args):
 if __name__ == "__main__":
     parser = ArgumentParser("simple_scenario")
     parser.add_argument("--random", action='store_true')
+    parser.add_argument("--occurency", type=str, default=None)
     parser.add_argument("--artifacts-dir", type=str, default="../../data/model/artifacts")
     parser.add_argument("--validation-trace-paths", type=str, default="../../data/model/val_tokens.json")
     parser.add_argument("--time", action="store_true")

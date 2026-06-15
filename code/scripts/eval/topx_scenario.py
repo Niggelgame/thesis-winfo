@@ -3,14 +3,16 @@ import random
 
 from argparse import ArgumentParser
 
-from shared import predict_next_topk, predict_next_topk_random, check_correct_prefix, RANDOM_SEED
+from shared import predict_next_topk, predict_next_topk_random, predict_next_topk_occurence, check_correct_prefix, RANDOM_SEED
 
-def predict_single(random, artifacts_dir, trace, color, topk):
+def predict_single(random, occurency, artifacts_dir, trace, color, topk):
     correct = 0
     total = 0
     for i in range(1, len(trace)):
         predict_from = trace[:i]
-        if random:
+        if occurency is not None:
+            next = predict_next_topk_occurence(occurency, topk)
+        elif random:
             next = predict_next_topk_random(topk)
         else:
             next = predict_next_topk(artifacts_dir, color, predict_from, topk)
@@ -55,7 +57,7 @@ def evaluate(args):
     random.seed(RANDOM_SEED)
     stats = []
     for trace in trace_tokens:
-        stats.append(predict_single(args.random, args.artifacts_dir, trace["tokens"], trace["color"], args.top_x))
+        stats.append(predict_single(args.random, args.occurency, args.artifacts_dir, trace["tokens"], trace["color"], args.top_x))
     
     print("Accuracy by trace:")
     total = 0
@@ -74,6 +76,7 @@ def evaluate(args):
 if __name__ == "__main__":
     parser = ArgumentParser("simple_scenario")
     parser.add_argument("--random", action='store_true')
+    parser.add_argument("--occurency", type=str, default=None)
     parser.add_argument("--top-x", type=int, default=2)
     parser.add_argument("--artifacts-dir", type=str, default="../../data/model/artifacts")
     parser.add_argument("--validation-trace-paths", type=str, default="../../data/model/val_tokens.json")

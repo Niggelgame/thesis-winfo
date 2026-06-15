@@ -2,8 +2,10 @@ import os
 import sys
 import random
 import time
+import json
 from pathlib import Path
 from contextlib import contextmanager
+from collections import defaultdict
 
 from heraklit_equiv_checker.checker import check_equivalence_step_file
 from ml_model.main import predict_wrap
@@ -77,6 +79,42 @@ VOCAB = [
 def timer():
     start = time.perf_counter_ns()
     yield lambda: time.perf_counter_ns() - start
+
+def predict_next_topk_occurence(occurency, topk):
+    with open(occurency, "r") as f:
+        data = json.load(f)
+    
+    mapped = defaultdict(lambda: [])
+    for t, c in data.items():
+        mapped[c].append(t)
+    
+    mapped = sorted(mapped.items(), key=lambda item: item[0], reverse=True)
+
+    out = []
+    remaining = topk
+    for c, tokens in mapped:
+        max_extract = len(tokens)
+        extract = min(remaining, max_extract)
+
+        sampled = random.sample(tokens, extract)
+        out.extend([
+            {"token": t, "probability": -1} for t in sampled
+        ])
+
+        remaining -= extract
+        if remaining == 0:
+            break
+    
+    return out
+
+
+# predict the next token based on the number of occurences a token presented in the 
+# training data set. 
+def predict_next_occurence(occurency):
+    return predict_next_topk_occurence(occurency, 1)[0]["token"]
+    
+
+
 
 # randomly picks an element from the vocab
 # ensure you have set the random seed before calling this function for 
