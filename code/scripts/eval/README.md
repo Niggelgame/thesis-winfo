@@ -57,6 +57,27 @@ Run the scenario randomly dropping events using
 uv run random_dropped_scenario.py
 ```
 
+## Long Unseen Trace
+
+First, in `data-collection`, run 
+
+```shell
+uv run collect_set.py ../../data/eval/long_trace/original --output ../../data/eval/long_trace/collected.proc.json
+```
+
+Then filter:
+
+```shell
+uv run prefilter.py ../../data/eval/long_trace/collected.proc.json --output ../../data/eval/long_trace/collected-filtered.proc.json
+```
+
+Next, from `ml_model`, run preprocessing:
+
+```shell
+uv run main.py preprocess --data ../../data/eval/long_trace/collected-filtered.proc.json --out-json ../../data/eval/long_trace/preprocessed_tokens.json
+```
+
+
 # Integrity
 
 All randomness within these evaluations have fixed the seed of `random` to ensure deterministic test execution.
