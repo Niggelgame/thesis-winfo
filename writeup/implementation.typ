@@ -17,7 +17,7 @@ For our implementation we rely on several tools:
 
 The implementation was tested on both _macOS 15.7_ and _Ubuntu Linux 24.04_. The hardware used for training and evaluation consists of an _Apple MacBook Pro_ with an _M1 Pro_ chip and _32GB_ of memory.
 
-== Data Collection and Preprocessing
+== Data Collection and Preprocessing<data-col-and-proc>
 
 In a first step, the data needs to be _extracted_ from the Fischertechnik APS. As described in  @mqtt-theory, MQTT consists of _publishers_ and _subscribers_, that communicate via a broker. We add an additional client to the broker by connecting a computer to the APS network, that runs a script that subscribes to all topics, using a wildcard subscription ("\*"). It will be therefore sent a copy of every message in the APS. 
 
@@ -75,7 +75,7 @@ The tool also contains a neat feature to display the composed run graphs of the 
 
 Thus, given a reference run $r$, a prefix $p$ of it and a prediction $n$ made by our model, we check the correctness of this prediction by using this tool, asking whether $p bullet n$ is a prefix of $r$.
 
-== Model Architecture 
+== Model Architecture<model-architecture>
 
 For next-event predictions, we use the Transformer architecture as presented by #cite(<attention>, form: "prose") and explained in @transformer.
 

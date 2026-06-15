@@ -24,7 +24,7 @@ To conclude, our approach creates a model that properly predicts next events, wh
 
 In the following section we want to highlight certain limitations and present relevant open problems for future work.
 
-Our case study relies on a dataset of only 10 runs through the system. While the resulting performance from such a small dataset is impressive, the training data obviously did not catch all edge cases for the model to learn. More data can be extracted from the APS, and more complex scenarios can be reflected in the training data, such as parallel processing of multiple workpieces or multiple AGVs running in the same system.
+Our case study relies on a dataset of only 10 runs through the system. While the resulting performance from such a small dataset is impressive, the training data obviously did not catch all edge cases for the model to learn. More data can be extracted from the APS, and more complex scenarios can be reflected in the training data, such as parallel processing of multiple workpieces or multiple AGVs running in the same system, as highlighted in @extended-run.
 
 The dataset also did not contain the metadata from the raw MQTT messages, such as the `DUP` flag to identify resends of messages due to the QoS levels. This additional protocol information could make future data pre-processing more reliable.
 

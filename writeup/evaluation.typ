@@ -57,6 +57,8 @@ While our general baseline evaluation cases in @baseline are measured on traces 
 We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected.//#note[Duplicate scenario?] 
 We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
+An additional experimental evaluation to test our generalisation performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing mulitple workpieces at once.
+
 === Additional Random Events
 
 To simulate the arrival of highly delayed messages, we will insert random events into the prefix traces. The amount of insertions is controlled by a parameter $p$, describing the ratio of number of newly inserted events to the size of the original event sequence. To validate the correctness of the predicted step, we append the predicted next step to the _original prefix_ and check this for correctness.
@@ -137,6 +139,28 @@ By dropping $p$ parts of the run, but the last event, the accuracy reduces only 
 ]<p-dropout>
 
 The reduced rate of accuracy rate points towards good generalisation capabilities of the model when dealing with message drops. 
+
+=== Extended Input Run<extended-run>
+
+The training data just contains traces of the APS, for which one workpiece was at a time, from entering the factory at the DPS, up to failing at the AIQS or being dropped off for deliver at the DPS again. We now process an additional recorded trace, for which nine workpieces are passed into the factory directly after each other, with the orders starting to be processed directly. 
+
+This run has certain properties our training runs do not have, that can have an impact on the prediction quality:
+
+1. The run contains workpieces of multiple colors. Remember that we use special _meta_ color tokens to let the model know what kind of workpiece is processed in this sequence (see @model-architecture). Usually, this token is automatically prepended based on the trace metadata containing the color. Thus our automatic preprocessing can not handle the color changes in between the workpiece processes.
+
+2. The run contains previously unseen parallelism. Especially the started processing of the first workpiece, while pieces are picked up from the DPS and passed to the HBW, lets the AGV continuously transfer between DPS, HBW and the processing workstation.
+
+3. The model outputs `<EOS>` tokens when it reaches what it learned to be the end of a sequence and thus a run. In the training data, every run ends after processing one piece. Here, the `<EOS>` should only be output after the processing of multiple workpieces. This type of generalization can not be expected from our model.
+
+Due to the set of training data sequences never containing such parallel scenarios, there is no proper workaround to the second and third issues - at least without splitting the traces into multiple separate traces and thus creating scenarios known to our model, or retraining a new model on training data containing such runs. The coloring issue however could be resolved at the time by adding additional color meta-tokens by hand into the token sequence, which would however also require changes to our processing specific to this sample.
+
+The APS trace is processed following the same procedures for training and validation data as seen in @data-col-and-proc. We then perform the same evaluation baseline evaluations as before.
+
+For simple next step prediction, our model has an accuracy of *45.25%*. Looking at the incorrect predictions, \~10% incorrectly assumed `<EOS>` matching our expectation from 3.
+An additional \~25% the model failed to predict additional AGV movements never seen in that context in the training data, and \~33% stem from the repeated picks and drops from the DPS and the HBW. The remaining failures can be mostly attributed to unknown process configurations from missing colors, as the model incorrectly predicts the sequences of process modules.
+
+Thus the accuracy, while seeming low, matches the expectations due the limits explained above. The hypothesis is supported by the accuracy of the top $2$ prediction of just *53.63%*, as many of the corrected step predictions from before are not even considered a valid option by the model.
+
 
 == Model Performance
 
