@@ -19,7 +19,7 @@ For each run $R = s_1 bullet ... bullet s_n$, where $s_j$ is a step token, we ta
 
 We calculate the _run accuracy_ metric for each run as $A_R = 1/(n-1) sum_(i=1)^(n-1)c_i$, dividing the number of correctly predicted steps by the number of totally predicted steps.
 
-As different runs have different lenghts $n$, the total _accuracy_ of our model on the validation set is calculated by an average over all run accuracies, as otherwise longer runs would be deemed more important than short ones. This should not be the case, as especially shorter runs contain the failure cases, resulting in an early process abort.
+As different runs have different lengths $n$, the total _accuracy_ of our model on the validation set is calculated by an average over all run accuracies, as otherwise longer runs would be deemed more important than short ones. This should not be the case, as especially shorter runs contain the failure cases, resulting in an early process abort.
 
 We therefore calculate the _accuracy_ as
 
@@ -57,7 +57,7 @@ While our general baseline evaluation cases in @baseline are measured on traces 
 We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected, thus robustness when dealing with such symptoms is desired.//#note[Duplicate scenario?] 
 We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
-An additional experimental evaluation to test our generalisation performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing mulitple workpieces at once.
+An additional experimental evaluation to test our generalisation performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing multiple workpieces at once.
 
 === Additional Random Events
 
@@ -65,13 +65,13 @@ To simulate the arrival of highly delayed messages, we will insert random events
 
 We differentiate between two sub-scenarios:
 
-- Insert at all positions but the last. This ensures that the model does not get unfairly reduced accuracy, as remotely possible events inserted after the last event might get treated as the situation where multiple events between the two last steps were dropped
+- Insert at all positions except the last. This ensures that the model does not get unfairly reduced accuracy, as remotely possible events inserted after the last event might get treated as the situation where multiple events between the two last steps were dropped
 - Insert at all positions
 
 
 We evaluate both sub-scenarios with $p$ starting from 0 and increasing in steps of 0.05 up to 0.5.
 
-For the first scenario the accuracy remains mostly stable, dropping slightly over the increasing $p$ from \~91% to \~86%. 
+For the first scenario the accuracy remains mostly stable, dropping slightly over the increasing $p$ from \~91% down to \~86%. 
 
 The performance drop in the second scenario, inserting random events being possible at all positions, worsens the accuracy much more significantly, up to only \~*43.4%* with $p = 0.5$. The progression over increasing $p$ is plotted in @p-progression.
 
@@ -108,9 +108,9 @@ This suggests that the model highly depends on the last prefix event being the c
 
 To simulate dropped messages, we can simply drop random events from our prefix traces before prediction. The percentage of dropped messages is controlled by a parameter $p$. We validate the prediction outputs again by appending the next step to the _original_, pre-drop prefix and checking for correctness.
 
-For the dropping of random events we explicitly do not consider the case of dropping the last event, since the model would then possibly predict the last event itself. Due to our validation emchanism this would duplicate the last token, immediately treating the model output as incorrect, even though the model output on the given sequence would be perfectly correct.
+For the dropping of random events we explicitly do not consider the case of dropping the last event, since the model would then possibly predict the last event itself. Due to our validation mechanism this would duplicate the last token, immediately treating the model output as incorrect, even though the model output on the given sequence would be perfectly correct.
 
-By dropping $p$ parts of the run, but the last event, the accuracy reduces only reduces slowly compared to the scenario in @p-progression. Surprisingly, even when dropping 50% of the events, the accuracy remains at \~*81%* from \~91%. The plot of accuracy can be seen in @p-dropout. 
+By dropping $p$ parts of the run, except the last event, the accuracy only reduces slowly compared to the scenario in @p-progression. Surprisingly, even when dropping 50% of the events, the accuracy remains at \~*81%* from the previous \~91%. The plot of accuracy can be seen in @p-dropout. 
 
 #figure(caption: [Progression of accuracy over increasing dropout rate $p$], placement: none)[
   #let results = (
@@ -142,7 +142,7 @@ The reduced rate of accuracy rate points towards good generalisation capabilitie
 
 === Extended Input Run<extended-run>
 
-The training data just contains traces of the APS, for which one workpiece was at a time, from entering the factory at the DPS, up to failing at the AIQS or being dropped off for deliver at the DPS again. We now process an additional recorded trace, for which nine workpieces are passed into the factory directly after each other, with the orders starting to be processed directly. 
+The training data just contains traces of the APS, for which one workpiece was processed at a time, from entering the factory at the DPS, up to failing at the AIQS or being dropped off for delivery at the DPS again. We now predict on an additional recorded trace, for which nine workpieces are passed into the factory directly after each other, with the orders starting to be processed directly. 
 
 This run has certain properties our training runs do not have, that can have an impact on the prediction quality:
 
@@ -166,7 +166,8 @@ Thus the accuracy, while seeming low, matches the expectations due the limits ex
 
 Predictive process monitoring is mostly done in an online setting, for which both the _resource requirements_ and the _amount of time_ required for singular predictions are relevant factors. 
 
-Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_#note[final number!] floating point parameters, thus VRAM with a fully loaded model usage is limited as well.
+Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_//#note[final number!] 
+floating-point parameters, thus VRAM with a fully loaded model usage is limited as well.
 
 The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times, later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction, however the current infrastructure does not provide the functionality for consistently keeping the model loaded.
 

@@ -23,9 +23,11 @@ In a first step, the data needs to be _extracted_ from the Fischertechnik APS. A
 
 Whenever it then receives a message, the message is decoded, combined with the MQTT topic and the timestamp of the receiving computer, then dumped to a file in _JSON_ format. This format is chosen as the messages sent through the broker are all in a _JSON_ format already.
 
-We *captured* the data of 10#note[change to the final number of runs] runs. Each run consists of a single workpiece being processed throughout the APS, from the insertion to the factory at the DPS up to either the successful delivery at the DPS or a failed quality control. 
+We *captured* the data of 10// #note[change to the final number of runs]
+runs. Each run consists of a single workpiece being processed throughout the APS, from the insertion to the factory at the DPS up to either the successful delivery at the DPS or a failed quality control. 
 
-Before any further processing, all JSON log files are read, checked for valid JSON syntax and then *combined* into one dataset of around 60MB#note[change to final size]. Here we also extract the color of the processed piece and pass it into the metadata.
+Before any further processing, all JSON log files are read, checked for valid JSON syntax and then *combined* into one dataset of around 60MB//#note[change to final size]
+. Here we also extract the color of the processed piece and pass it into the metadata.
 
 Next, we perform some *preliminary filtering*, essentially removing the messages regarding two topics: The first one contains the raw image data of the camera mounted on the APS, wasting space in the logs. The second one removes a single action that makes sure a status LED is blinking. This removes 5298 and 1996 messages respectively, reducing the dataset size to only around 14MB. 
 
@@ -49,7 +51,8 @@ Due to the QoS levels of MQTT and the retained messages of the APS MQTT broker, 
 
 The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the message the time was sent from a module, the time it was received, the module serial number and message IDs.
 
-Lastly, we perform a random split of our tokenized traces into 7 training and 3 validation#note[change to final numbers] traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose"), are not relevant, as all our executions in the APS are independent of another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time.
+Lastly, we perform a random split of our tokenized traces into 7 training and 3 validation//#note[change to final numbers] 
+ traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose") are not relevant, as all our executions in the APS are independent of one another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time.
 
 The two tokenized trace sets are then written to two files. We ensure, that from now on the model training process does not interact with the validation data.
 
@@ -94,11 +97,11 @@ Further training details are discussed in the following section.
 
 The model is generally trained in a set amount of _epochs_. Each epoch, the training data is provided to the model to compute the _loss_, a metric describing a _distance_ of the prediction to the correct results. The lower the loss, the better. 
 
-We use a *cross-entropy loss* function, that always sets the loss to for a position 0 if the next token is a padding token. The cross entropy loss creates strong gradients for the optimizer by relying on a negative logarithmic of the probability assigned, if the prediction is incorrect, which results in exponential penalty and thus loss for incorrect predictions. 
+We use a *cross-entropy loss* function, that always sets the loss to 0 for a position if the next token is a padding token. The cross entropy loss creates strong gradients for the optimizer by relying on a negative logarithm of the probability assigned, if the prediction is incorrect, which results in exponential penalty and thus loss for incorrect predictions. 
 
 After computing the loss, we perform a `pytorch` backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our models, hopefully lowering the loss.
 
-During training of our model, we add a small _dropout_ layer into our model after the positionally embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behaviour has been validated in previous work also related to process prediction @dropout-ppm-lstm. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
+During training of our model, we add a small _dropout_ layer into our model after the positional embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behaviour has been validated in previous work also related to process prediction @dropout-ppm-lstm. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
 
 This process is repeated for a fixed set of epochs, until a certain loss is reached or until not enough loss progress is achieved.
 
@@ -115,13 +118,13 @@ dropouts = [0.1, 0.2, 0.3]
 learning_rates = [3e-3, 1e-3]
 ```
 
-On each possible combinational set of parameters we perform a *k-fold cross-validation*. This is a standard technique to avoid overfitting while just using training data. The data set is split into $k$ equally sized groups of data, the so-called _folds_, then we train the model $k$ times, always using $k-1$ folds for training, and one for validation. This technique is especially relevant for the small dataset we have, as we can not be sure that a single random split properly distributes the data into fair training and validation sets. We chose `k = 4`.
+On each possible combinatorial set of parameters we perform a *k-fold cross-validation*. This is a standard technique to avoid overfitting while just using training data. The data set is split into $k$ equally sized groups of data, the so-called _folds_, then we train the model $k$ times, always using $k-1$ folds for training, and one for validation. This technique is especially relevant for the small dataset we have, as we can not be sure that a single random split properly distributes the data into fair training and validation sets. We chose `k = 4`.
 
 During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model, that has found good parameters early on, or such a bad model configuration, that training it further probably does not produce much of an impact either. 
 
 During cross validation we also measure the performance of the combination of most probable 3 output tokens, producing higher `top_k` performance if any one of these top 3 tokens are correct. 
 
-We then score the different configurations. We do not only consider the average model correctness, but also include a small factor of the `top_k` performance. While we want to optimize for the _one_ most probable output in the final trained model, we want the architecture to support producing sensible other options. This way of scoring rewards fully correct models the most, as providing a correct top hit implies the `top_k` also contain a correct hit. But it also chooses a model that produces good overall second or third hit performance over one that only has a the same top hit performance with bad second or third hit performance.
+We then score the different configurations. We do not only consider the average model correctness, but also include a small factor of the `top_k` performance. While we want to optimize for the _one_ most probable output in the final trained model, we want the architecture to support producing other sensible options. This way of scoring rewards fully correct models the most, as providing a correct top hit implies the `top_k` also contain a correct hit. But it also chooses a model that produces good overall second or third hit performance over one that only has a the same top hit performance with bad second or third hit performance.
 
 The highest scoring configuration is then selected as the one the with which we then perform the training on the full data.
 
