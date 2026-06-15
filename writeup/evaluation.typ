@@ -76,7 +76,7 @@ For the first scenario the accuracy remains mostly stable, dropping slightly ove
 The performance drop in the second scenario, inserting random events being possible at all positions, worsens the accuracy much more significantly, up to only \~*43.4%* with $p = 0.5$. The progression over increasing $p$ is plotted in @p-progression.
 
 
-#figure(caption: [Progression of accuracy over increasing $p$], placement: none)[
+#figure(caption: [Progression of accuracy over increasing insertion rate $p$], placement: none)[
   #let results = (
     "0": 0.9056603773584906,
     "0.05": 0.8113207547169812,

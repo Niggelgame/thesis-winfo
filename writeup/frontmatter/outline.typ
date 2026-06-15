@@ -1,4 +1,4 @@
-#import "@preview/outrageous:0.4.1" as outrageous
+#import "outrageous-copy.typ" as outrageous
 
 #let default-outline() = {
   show outline.entry: outrageous.show-entry.with(
@@ -19,12 +19,13 @@
   show outline.entry: outrageous.show-entry.with(
     // the typst preset retains the normal Typst appearance
     ..outrageous.presets.outrageous-figures,
-    prefix-transform: (lvl, prefix) => {
+    prefix-transform: (location, lvl, prefix) => {
       let (supplement, _, _, number) = prefix.children
+
       let v = if number.text.ends-with(regex("[^\d]1[^\d]*")) and not number.text.starts-with("1") {
         v(10pt)
       }
-      box[#v#number.]
+      box[#numbering("1.", ..counter(heading.where(level: 1)).at(location))#v#number.]
     },
     font: ("IBM Plex Sans", auto),
     vspace: (15pt, none),
