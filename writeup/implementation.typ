@@ -12,7 +12,7 @@ For our implementation we rely on several tools:
 - `python`#footnote[#link("https://www.python.org") _last accessed: 11.06.2026_]: The programming language used for the code infrastructure and scripts.
 - `uv`#footnote[#link("https://docs.astral.sh/uv/") _last accessed: 11.06.2026_]: A Python project and package manager handling the other listed dependencies and tools.
 - `pytorch`#footnote[#link("https://docs.pytorch.org/docs/2.12/index.html") _last accessed: 11.06.2026_]: An optimized python library for deep learning. It supports training on CPUs and GPUs, including integrated GPUs such as ones used in Apple Silicon processors. We use it to build our models by using integrated base models or layers, and to perform the training.
-- `numpy`#footnote[#link("https://numpy.org") _last accessed: 11.06.2026_]: An optimized python library for array programming, such as tensors. This is also implicitely used by `pytorch`, and we use it to interact with data to and from `pytorch`.
+- `numpy`#footnote[#link("https://numpy.org") _last accessed: 11.06.2026_]: An optimized python library for array programming, such as tensors. This is also implicitly used by `pytorch`, and we use it to interact with data to and from `pytorch`.
 - `graphviz`#footnote[#link("https://graphviz.readthedocs.io/en/stable/") _last accessed: 11.06.2026_]: A library for a graph drawing software for python. We use it to visualize Heraklit runs.
 
 The implementation was tested on both _macOS 15.7_ and _Ubuntu Linux 24.04_. The hardware used for training and evaluation consists of an _Apple MacBook Pro_ with an _M1 Pro_ chip and _32GB_ of memory.
@@ -33,7 +33,7 @@ Next, we perform some *preliminary filtering*, essentially removing the messages
 
 The camera data could be interesting for future work, so we decided to still collect it, even though we will not make any use of them here.
 
-The next step contains the proper *preprocessing* of the trace data. Here, we analyse the messages themselves to *extract the tokens*, which represent the Heraklit steps modelled in @modelling. Note that these steps are assumed to already be implicitely composed with the control steps of @implicit-connect-steps.
+The next step contains the proper *preprocessing* of the trace data. Here, we analyse the messages themselves to *extract the tokens*, which represent the Heraklit steps modelled in @modelling. Note that these steps are assumed to already be implicitly composed with the control steps of @implicit-connect-steps.
 
 We can distinguish 3 different message types relevant to our modelling based on the MQTT topic:
 #pagebreak()
@@ -68,7 +68,7 @@ However, by the composition calculus (#ref_def("Graph Composition")) we know tha
 
 We define $A$ as a *graph prefix* of $B$ , if the _initial nodes_ (here: nodes without incoming edges) of $A$ are a subset of the _initial nodes_ of $B$ and if $A$ from these _initial nodes_ is a subgraph of $B$. 
 
-We limit our initial nodes to only contain unique labels, as otherwise all possible initial node mappings must be explored, which is computationally expensive. This theoretical limit does not provide any limitations in practise, as proper runs on a single workpiece never contain multiple initial steps of the same type.
+We limit our initial nodes to only contain unique labels, as otherwise all possible initial node mappings must be explored, which is computationally expensive. This theoretical limit does not provide any limitations in practice, as proper runs on a single workpiece never contain multiple initial steps of the same type.
 
 #line()
 
@@ -101,7 +101,7 @@ We use a *cross-entropy loss* function, that always sets the loss to 0 for a pos
 
 After computing the loss, we perform a `pytorch` backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our models, hopefully lowering the loss.
 
-During training of our model, we add a small _dropout_ layer into our model after the positional embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behaviour has been validated in previous work also related to process prediction @dropout-ppm-lstm. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
+During training of our model, we add a small _dropout_ layer into our model after the positional embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly on a probability defined as $d_("drop")$. This layer tries to regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behaviour has been validated in previous work also related to process prediction @dropout-ppm-lstm. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
 
 This process is repeated for a fixed set of epochs, until a certain loss is reached or until not enough loss progress is achieved.
 
@@ -145,6 +145,6 @@ $<configuration>
 
 The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.#note[final values. maybe add a little graph with the progression over epochs?]
 
-A more interesting statistic is the top hit correctness rate of _only_ 89.2%, the top three hit correctness rate being 98.4%. While this might seem surprisingly low for a model we just trained, we need to keep in mind the dropout layer we explicitely added to the training process. 
+A more interesting statistic is the top hit correctness rate of _only_ 89.2%, the top three hit correctness rate being 98.4%. While this might seem surprisingly low for a model we just trained, we need to keep in mind the dropout layer we explicitily added to the training process. 
 
 In @evaluation we will use the split off validation set to perform some different evaluations on the now obtained model.

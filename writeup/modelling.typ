@@ -191,7 +191,7 @@ as the implicit steps can be directly inferred.
 
 At this point, one might wonder why we have not directly put the `Next Module Ready` step into the module steps. The reason for this decision is that we can keep the level of detail on the module basis, while essentially just having an interface wrapper to simplify implementation details later.
 
-All the implicit control steps, that are are implicitly composed with the respective `Start` and `Finish` steps of the processing modules can be found in @implicit-connect-steps. Notably, the DRILL, MILL and AIQS only connect a start module on the `Pick` action and a stop module on the `Drop` action. The DPS and HBW however can independently Pick and Drop without any ongoing action in between, so both `Pick` and `Drop` actions have their own implicit start and stop control.
+All the implicit control steps, that are implicitly composed with the respective `Start` and `Finish` steps of the processing modules can be found in @implicit-connect-steps. Notably, the DRILL, MILL and AIQS only connect a start module on the `Pick` action and a stop module on the `Drop` action. The DPS and HBW however can independently Pick and Drop without any ongoing action in between, so both `Pick` and `Drop` actions have their own implicit start and stop control.
 
 For the further processing we then also redefine the following step modules as runs composed with their implicit control step:
 

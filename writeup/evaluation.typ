@@ -27,7 +27,7 @@ $A = 1/(|"val"|) sum_(R in "val") A_R$
 
 We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a _random_ next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-We also provide an empirical predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the datset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
+We also provide an empirical predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the dataset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
 The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 

@@ -17,7 +17,7 @@ We will not provide an in-depth explanation of Heraklit, but will focus on an ov
 - *Dynamics*: Actions are performed using local state, and dynamics between actions using causal relationships.
 - *Statics*: Items, data and operations on them are treated as first-class citizens.
 
-The _composition calculus_ of _modules_ and causal modelling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our usecase, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
+The _composition calculus_ of _modules_ and causal modelling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
 
 Heraklit modules are conceptually modelled using graphs, with inner vertices and outer vertices. These outer vertices contribute to the _interface_ of a module and are the external connection points of a module.
 
@@ -114,13 +114,13 @@ Important properties of run modules are:
 
 In the following, _run modules_ are often referred to as _runs_ for simplicity.
 
-This concludes the most necessary basic Heraklit concepts necessary for the our approach. While Heraklit offers many possibilities to model data, structures and functions, we will not need them for the simple model of the Fischertechnik APS.
+This concludes the most necessary basic Heraklit concepts necessary for our approach. While Heraklit offers many possibilities to model data, structures and functions, we will not need them for the simple model of the Fischertechnik APS.
 
 @nep shows some graphical examples of step modules and composition into runs. In @modelling the step modules for the Fischertechnik APS are defined, along with some examples of composition.
 
 == Process Prediction
 
-Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event-log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensoric data, can also be attached to an event.
+Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event-log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensor data, can also be attached to an event.
 
 Process prediction is concerned with predicting *possible outcomes* of ongoing traces. This prediction can be performed online, meaning while the execution of the process happens, such that unwanted outcomes can be prevented by preemptively changing the execution based on the prediction. 
 
@@ -134,7 +134,7 @@ Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let
 
 We build upon the example from #link(<introduction>)[the Introduction]: 
 
-The process needs to start, then two separate machines produce `A` and `B`, and then a third machine combines them. There are two causal relationships given - `Start` must happen first, and the combination of `A` and `B` must clearly happen after both `A` and `B` were produced. Given the prefix trace `Start`, both $#[`Produce`] A$ and $#[`Produce`] B$ are valid options due to the parallelity given. Both traces
+The process needs to start, then two separate machines produce `A` and `B`, and then a third machine combines them. There are two causal relationships given - `Start` must happen first, and the combination of `A` and `B` must clearly happen after both `A` and `B` were produced. Given the prefix trace `Start`, both $#[`Produce`] A$ and $#[`Produce`] B$ are valid options due to the parallelism given. Both traces
 
 $ #[`Start`] -> #[`Produce`] A -> #[`Produce`] B -> #[`Combine`] A and B$
 
@@ -202,7 +202,7 @@ Both cases result in duplicate messages from the broker, which need to be filter
 
 == Transformer<transformer>
 
-Over the last decade, research mostly identified deep-learning approaches as an advancement over traditional machine learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorial variables, traditional machine learning approaches start to show their weaknesses @rf-bad.
+Over the last decade, research mostly identified deep-learning approaches as an advancement over traditional machine learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorical variables, traditional machine learning approaches start to show their weaknesses @rf-bad.
 
 While using Long Short-Term-Memory models (LSTMs), a special version of recurring neural networks (RNN) showed it successes @lstmref1 @lstmref2, later state-of-the-art models use the transformer architecture @transformerpred1 @transformerpred2.
 
@@ -212,7 +212,7 @@ First presented in @attention, this deep-learning based model architecture revol
 
 The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focussed on next token generation only. 
 
-As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that sub-module.
+As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that submodule.
 
 The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum amount of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a trainable linear layer, essentially the index of the tokens in the vocabulary to the lower dimension, _embedding_ it.
 Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as are further variables written as $d_("param")$, which must be chosen before training.
