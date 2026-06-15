@@ -76,7 +76,15 @@ Next, from `ml_model`, run preprocessing:
 ```shell
 uv run main.py preprocess --data ../../data/eval/long_trace/collected-filtered.proc.json --out-json ../../data/eval/long_trace/preprocessed_tokens.json
 ```
+To evaluate, run both simple and topk scenarios:
 
+```shell
+uv run simple_scenario.py --validation-trace-path ../../data/eval/long_trace/preprocessed_tokens.json
+```
+
+```shell
+uv run topx_scenario.py --validation-trace-path ../../data/eval/long_trace/preprocessed_tokens.json
+```
 
 # Integrity
 
