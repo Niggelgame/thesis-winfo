@@ -3,7 +3,7 @@
 
 = Conclusion<conclusion>
 
-This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, under concurrent and parallel systems. This approach starts by modelling relevant events as Heraklit @heraklit _steps_, which are then interpreted as _tokens_ for a modified transformer architecture by #prose([@attention]). 
+This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, under concurrent and parallel systems. This approach starts by modelling relevant events as Heraklit _steps_ @heraklit, which are then interpreted as _tokens_ for a modified transformer architecture by #prose([@attention]). 
 
 To evaluate the approach, we introduce a _correctness_ measure of a prediction based on prefix runs. We rely on the Heraklit composition calculus to allow arbitrary ordering of causally unrelated events, while enforcing the order of causally related events. 
 
