@@ -143,7 +143,7 @@ $<configuration>
 
 === Training Results
 
-The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.#note[final values. maybe add a little graph with the progression over epochs?]
+The final training based on the parameters in @configuration takes 30 seconds in full load, using the integrated graphics chip. The cross entropy loss of the final model is $0.8392$.// #note[final values. maybe add a little graph with the progression over epochs?]
 
 A more interesting statistic is the top hit correctness rate of _only_ 89.2%, the top three hit correctness rate being 98.4%. While this might seem surprisingly low for a model we just trained, we need to keep in mind the dropout layer we explicitily added to the training process. 
 
