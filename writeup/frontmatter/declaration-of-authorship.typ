@@ -6,7 +6,7 @@
   grid(
     columns: (auto, auto),
     align(left)[
-      #city, #date.display("[month repr:long] [day], [year]")
+      #city, #date.display("[day]. [month repr:long], [year]")
       #h(12pt)
     ],
     align(right)[

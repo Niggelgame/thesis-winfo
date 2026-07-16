@@ -7,19 +7,19 @@ In this chapter, we will present the theoretical and technical background of thi
 This includes defining the Heraklit modeling framework used to model the factory, the process prediction problem and finally the transformer architecture applied to solve it, while providing related work.
 
 
-== Modelling with Heraklit
+== Modeling with Heraklit
 
-Heraklit @heraklit is a process modelling framework designed to thrive in a discrete digital world, providing a formal foundation for interaction-driven process management of digital and cyber-physical systems.
+Heraklit @heraklit is a process modeling framework designed to thrive in a discrete digital world, providing a formal foundation for interaction-driven process management of digital and cyber-physical systems.
 
 We will not provide an in-depth explanation of Heraklit, but will focus on an overview of the most important points relevant to this work. In general, Heraklit builds upon three main characteristics:
 
-- *Architecture*: Models can be composed and refined, allowing building large systems using the _composition calculus_.
+- *Architecture*: Models can be composed and refined, allowing the building of large systems using the _composition calculus_.
 - *Dynamics*: Actions are performed using local state, and dynamics between actions using causal relationships.
 - *Statics*: Items, data and operations on them are treated as first-class citizens.
 
-The _composition calculus_ of _modules_ and causal modelling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
+The _composition calculus_ of _modules_ and causal modeling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
 
-Heraklit modules are conceptually modelled using graphs, with inner vertices and outer vertices. These outer vertices contribute to the _interface_ of a module and are the external connection points of a module.
+Heraklit modules are conceptually modeled using graphs, with inner vertices and outer vertices. These outer vertices contribute to the _interface_ of a module and are the external connection points of a module.
 
 #definition("Interface")[
   A _labeled_ and _totally ordered_ set is an interface.
@@ -67,7 +67,7 @@ The module composition requires composition of graphs along the interfaces. Intu
 
 Module Composition holds two important properties:
 
-- *Associativity*: Let $A, B, C$ be modules. Then $(A bullet B) bullet C = A bullet (B bullet C)$. This property allows us to ignore the brackets in composition, and merging multiple submodules in arbitrary orders.
+- *Associativity*: Let $A, B, C$ be modules. Then $(A bullet B) bullet C = A bullet (B bullet C)$. This property allows us to ignore the brackets in composition, and merge multiple submodules in arbitrary orders.
 - *Commutativity* without shared gates: Let $A, B$ be modules. $A bullet B = B bullet A$ iff $A$ and $B$ share no equal interface labels. This will be of high interest when composing modules without causal relationships. Their interface would not share any labels, so the order of their composition also does not matter.
 
 Note how in #ref_def("Module") there is no notion of any dynamics yet. Heraklit follows the idea of petri nets to model the dynamics, so we will now refine our definitions to separate the graph nodes into alternating _places_ and _transitions_.
@@ -87,7 +87,7 @@ Note how in #ref_def("Module") there is no notion of any dynamics yet. Heraklit 
 
 Composition of net modules is defined via the composition of modules and produces a valid net module. 
 
-To model the discrete stepwise behaviour of processes, we define _step modules_, which only ever include a single _event_ and the states it affects. Speaking in terms of net modules, every step module only contains *one transition*.
+To model the discrete stepwise behavior of processes, we define _step modules_, which only ever include a single _event_ and the states it affects. Speaking in terms of net modules, every step module only contains *one transition*.
 
 
 // #todo[Do we really need the "disjoint" requirement? (it should work for our stuff) Additionally, do we want to allow places that are not part of transitions?]
@@ -120,17 +120,17 @@ This concludes the most necessary basic Heraklit concepts necessary for our appr
 
 == Process Prediction
 
-Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event-log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensor data, can also be attached to an event.
+Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensor data, can also be attached to an event.
 
 Process prediction is concerned with predicting *possible outcomes* of ongoing traces. This prediction can be performed online, meaning while the execution of the process happens, such that unwanted outcomes can be prevented by preemptively changing the execution based on the prediction. 
 
-Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or finer-grained information, such as the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @procmining16.
+Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or fine-grained information, such as the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @procmining16.
 
 In this work, we will focus on predicting the next event of a process.
 
 === Next-Event Prediction<nep>
 
-Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in a sense that $e_(i+1)$ is *a* next step of $p$. However this definition fails to capture the semantics of concurrent systems, where multiple _correct_ linearizations and thus orderings are possible. 
+Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in a sense that $e_(i+1)$ is *a* next step of $p$. However, this definition fails to capture the semantics of concurrent systems, where multiple _correct_ linearizations and thus orderings are possible. 
 
 We build upon the example from #link(<introduction>)[the Introduction]: 
 
@@ -188,13 +188,13 @@ To make use of this definition, we first need to model a system by providing the
 
 MQTT is a client-server protocol using a publish/subscribe pattern. It is considered the most favorable connection pool for Internet of Things (IoT) applications @mqtt.
 
-With MQTT, clients can connect to the server, a _broker_, and _publish_ some information to a _topic_. Other clients can connect to the same broker, and _subscribe_ to certain topics. Whenever new messages are published to a topic this client is subscribed to, the broker pushes this message to the client. Clients can be _publishers_ (or sources) and _subscribers_ (or sinks) at the same time. Thus MQTT is a many-to-many communication protocol. 
+With MQTT, clients can connect to the server, a _broker_, and _publish_ some information to a _topic_. Other clients can connect to the same broker, and _subscribe_ to certain topics. Whenever new messages are published to a topic this client is subscribed to, the broker pushes this message to the client. Clients can be _publishers_ (or sources) and _subscribers_ (or sinks) at the same time. Thus, MQTT is a many-to-many communication protocol. 
 
 It provides three levels of Quality of Service (QoS), which can deal differently with network performance issues like latency or error rate, at the trade-off of network traffic and energy consumption @mqtt-qos.
 
 1. QoS 0: At most once. The message is sent to all subscribers only once. It is not stored on the broker, and if delivery was not successful, no redistribution is planned. It is also known as _"fire and forget"_.
 2. QoS 1: At least once. The message is repeatedly sent to all subscribers that have not acknowledged the message yet, marking every message from the second send on using the `DUP` flag. The message is stored at the broker until all subscribers have received the message.
-3. QoS 2: Exactly once. Similarly to QoS 1 the broker stores the message and resends it. However the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
+3. QoS 2: Exactly once. Similarly to QoS 1 the broker stores the message and resends it. However, the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
 
 The Fischertechnik APS uses MQTT as its main channel of communication between the different production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
 
@@ -212,11 +212,11 @@ While using Long Short-Term-Memory models (LSTMs), a special version of recurrin
 
 First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250.000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
 
-The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focussed on next token generation only. 
+The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focused on next token generation only. 
 
 As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that submodule.
 
-The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum amount of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a trainable linear layer, essentially the index of the tokens in the vocabulary to the lower dimension, _embedding_ it.
+The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum number of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a trainable linear layer, essentially the index of the tokens in the vocabulary to the lower dimension, _embedding_ it.
 Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as are further variables written as $d_("param")$, which must be chosen before training.
 
 Next follows a _positional encoding_, where fixed geometrically decreasing frequencies are added to the input embeddings to encode the position of the token within the sequence. As no further weight is given to the explicit original sequence order in the following steps, this encoding provides the only way to distinguish two tokens' distance in the upcoming layers. 
@@ -232,14 +232,14 @@ This computation can be intuitively understood as follows.
 1. Combining $Q_i$ and $K_i$: $Q_i$ represents a certain learned query, essentially encoding which part of the embedding is interested in getting certain information of other tokens. $K_i$ highlights positions in the embedding, that match this information of the query $Q_i$. By multiplying them, one combines the interested embedding with the tokens that contain information.
 2. Lowering the magnitude of the values in the combined matrix by dividing by $sqrt(d_k)$, such that the $"softmax"$ function has smoother gradients. 
 3. Masking out all fields that try to let tokens refer to tokens after them, by setting the matrix upper right diagonal to $- infinity$.
-4. $"softmax"$ itself performs a rowwise normalisation, such that all rows represent a random distribution, i. e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
-5. Multiplying by $V_i$: $V_i$ contains the embedding of the information that is present, if the query and key match. Thus the multiplication linearly scales that information within the embedding.
+4. $"softmax"$ itself performs a rowwise normalization, such that all rows represent a random distribution, i. e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
+5. Multiplying by $V_i$: $V_i$ contains the embedding of the information that is present, if the query and key match. Thus, the multiplication linearly scales that information within the embedding.
 
 The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatenated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
 
 The third sublayer of the transformer block is a simple 2-layer fully-connected feed-forward network with a ReLU activation function. The input and output layers have dimension $d_("model")$ and the inner layer $d_("dim_ff")$.
 
-After the transformer blocks, we need to extract the next token. Similarly to the initial embedding, we now need to map the embedded $d_("ctx")$ $d_("model")$-dimensional vectors back to our tokens. We again apply a learnable linear layer to the embedding, resulting in vectors the same size as the vocab with all tokens. After normalisation, the vector at position $i$ contains a probability distribution over the token at position $i+1$.
+After the transformer blocks, we need to extract the next token. Similarly to the initial embedding, we now need to map the embedded $d_("ctx")$ $d_("model")$-dimensional vectors back to our tokens. We again apply a learnable linear layer to the embedding, resulting in vectors the same size as the vocab with all tokens. After normalization, the vector at position $i$ contains a probability distribution over the token at position $i+1$.
 
 #line()
 

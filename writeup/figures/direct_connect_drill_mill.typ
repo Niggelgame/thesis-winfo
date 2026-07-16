@@ -1,6 +1,6 @@
 #import "@preview/cetz:0.5.0": canvas, draw
 
-#figure(caption: "Direct Module Interaction Modelling Approach", placement: none)[
+#figure(caption: "Direct Module Interaction Modeling Approach", placement: none)[
 
 #align(center)[
   #scale(x: 80%, y: 80%, reflow: true)[#canvas({

@@ -2,11 +2,11 @@
 #import "@preview/cetz:0.5.0": canvas, draw
 #import "lib.typ": *
 
-= Heraklit Modelling<modelling>
+= Heraklit Modeling<modelling>
 
 This section marks the beginning of our case study, showcasing the approach of using Heraklit and the Transformer architecture to perform next-step process prediction.
 
-We want to evaluate our process prediction technique on the Fischertechnik *Agile Production Simulator* @fischertechnik. As required by our definition of what a correct prediction is (#ref_def("Correct Prediction")), we will first need to translate events of the APS into Heraklit @heraklit steps. These steps should crucially allow the modelling of concurrency within the system by only modelling the causal relationships of events.
+We want to evaluate our process prediction technique on the Fischertechnik *Agile Production Simulator* @fischertechnik. As required by our definition of what a correct prediction is (#ref_def("Correct Prediction")), we will first need to translate events of the APS into Heraklit @heraklit steps. These steps should crucially allow the modeling of concurrency within the system by only modeling the causal relationships of events.
 
 While some domain knowledge is necessary for this step, still only step modules need to be created, not full system process models. As these steps are predicted by our technique, having a clear understanding of what each step represents is useful during further evaluation.
 
@@ -18,22 +18,22 @@ We can split and group the steps by the relevant factory modules:
 - Drilling Station (*DRILL*): It performs a simulated drilling operation on the workpieces, picking them up from and dropping them onto the AGV.
 - Milling Station (*MILL*): It performs a simulated milling operation on the workpieces, picking them up from and dropping them onto the AGV.
 - Quality Control with AI (*AIQS*): Checks the quality of a workpiece using a camera and color sensor. If a failure occurred - represented by a erroneous print on the workpiece - the workpiece is discarded.
-- Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus for our modelling purposes, it will be the glue that connects the modules together.
+- Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus, for our modeling purposes, it will be the glue that connects the modules together.
 
 == AGV
 
-We start by modelling the AGV. It is the main source of interaction in the APS, however it can only perform one action by itself, which is moving from one processing module to the next. As we want to have one token per step, we need to create multiple *move AGV* steps.
+We start by modeling the AGV. It is the main source of interaction in the APS, however it can only perform one action by itself, which is moving from one processing module to the next. As we want to have one token per step, we need to create multiple *move AGV* steps.
 
-For each module $#[`M1`] in {"DPS, HBW, DRILL, MILL, AIQS"} := M$ we need to have a move step to each module $#[`M2`] in M \\ {#[`M1`]}$. Thus in the following step module template, we get all possible *move AGV* steps by instantiating `M1` and `M2` with all possible combinations.
+For each module $#[`M1`] in {"DPS, HBW, DRILL, MILL, AIQS"} := M$ we need to have a move step to each module $#[`M2`] in M \\ {#[`M1`]}$. Thus, in the following step module template, we get all possible *move AGV* steps by instantiating `M1` and `M2` with all possible combinations.
 
 
 #include "figures/agv/steps.typ"
 
-A keen reader might realize that this could be modeled using a parameterized module, an advanced Heraklit concept not introduced in @theory. As no further parameterization was necessary in the remaining modelling, the introduction, definitions and complexity can be reduced by showcasing the template steps instead. For the sake of completeness, the step module as a parameterized module is shown below.
+A keen reader might realize that this could be modeled using a parameterized module, an advanced Heraklit concept not introduced in @theory. As no further parameterization was necessary in the remaining modeling, the introduction, definitions and complexity can be reduced by showcasing the template steps instead. For the sake of completeness, the step module as a parameterized module is shown below.
 
 #include "figures/agv/steps_param.typ"
 
-This type of modelling requires defining variables and domains as ```
+This type of modeling requires defining variables and domains as ```
 variable
 y: process-module
 
@@ -45,7 +45,7 @@ Important to notice is that depending on which *AGV move* step is taken, only ce
 
 == Picking and Dropping
 
-All other modules need to physically interact with the remaining factory by picking up workpieces from the AGV or dropping workpieces onto the AGV. This workflow is generally the same over all modules, thus to reduce wasted space, we again fall back to modelling these steps using the following template, with #block(breakable: false)[$#[`MOD`] in {"DPS, HBW, DRILL, MILL, AIQS"}$]
+All other modules need to physically interact with the remaining factory by picking up workpieces from the AGV or dropping workpieces onto the AGV. This workflow is generally the same over all modules, thus to reduce wasted space, we again fall back to modeling these steps using the following template, with #block(breakable: false)[$#[`MOD`] in {"DPS, HBW, DRILL, MILL, AIQS"}$]
 
 #grid(
   columns: (1fr, 1fr),
@@ -55,7 +55,7 @@ All other modules need to physically interact with the remaining factory by pick
 )
 
 Two points should be highlighted:
-1. We are modelling failure modes. In case the action fails, the respective `Pick Failed` or `Drop Failed` can be composed instead of the `Picked` or `Dropped` successful counterpart.
+1. We are modeling failure modes. In case the action fails, the respective `Pick Failed` or `Drop Failed` can be composed instead of the `Picked` or `Dropped` successful counterpart.
 2. The AGV is not able to move while the picking or dropping action is performed, as it consumes the token at `AGV at MOD` token.
 
 Next we will look at the individual process module actions.
@@ -71,9 +71,9 @@ However, the Fischertechnik simplified both control challenges by
 1. only looking at the current running order that the pick or drop action is associated with, figuring out what color it refers to and then 
 2. performing a _First-In First-Out_ (FIFO) storage policy for all colors, keeping the mapping of colors to ordered storage slots persistent.
 
-Thus when executing a pick or drop, it can do so without any further information. We decide to not try to model the internal (unexposed) storage logic here, as no events are emitted through the MQTT logs and therefore no step can be mapped to it. The generic `MOD Pick` and `MOD Drop` actions defined in @pick-steps-template and @drop-steps-template can be reused here.
+Thus, when executing a pick or drop, it can do so without any further information. We decide to not try to model the internal (unexposed) storage logic here, as no events are emitted through the MQTT logs and therefore no step can be mapped to it. The generic `MOD Pick` and `MOD Drop` actions defined in @pick-steps-template and @drop-steps-template can be reused here.
 
-A successful HBW pick run can be seen in @pick-hbw-run, a failed HBW pick @pick-hbw-run-fail.
+A successful HBW pick run can be seen in @pick-hbw-run, a failed HBW pick in @pick-hbw-run-fail.
 
 
 #include "figures/hbw/run_pick_succ.typ"
@@ -132,7 +132,7 @@ $&#[*DRILL Drill success*] &= &#[*DRILL Drill*] bullet #[*DRILL Drilled*] \
 
 Similarly to the drill, the mill process module performs a simulated action, but it is an operation to simulate milling a groove into the workpiece instead of the drilling operation. It again also contains the template `Pick` and `Drop` steps. 
 
-Thus the steps are defined identically modulo renaming in @mill-mill-steps. Thus the same properties hold and the runs can be composed in a similar fashion as in @drill-drill-run and @drill-drill-run-failure.
+The steps are defined identically modulo renaming in @mill-mill-steps. Thus, the same properties hold and the runs can be composed in a similar fashion as in @drill-drill-run and @drill-drill-run-failure.
 
 #include "figures/mill/steps_mill.typ"
 
@@ -144,7 +144,7 @@ Besides the `Pick` and `Drop` steps, the AIQS needs to perform this quality chec
 
 #include "figures/aiqs/steps_check_quality.typ"
 
-In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behaviour of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds to base its decision on. 
+In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds to base its decision on. 
 
 We will later see that this results in missed accuracy of our prediction model.
 
@@ -159,9 +159,9 @@ A composed success run of the AIQS can be seen in @aiqs-check-run, the failure i
 The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
 Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, is *implicit* or *invisible* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
-This means that the CCU steps will and can not be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
+This means that the CCU steps will and cannot be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
 
-For a potential synthetic generation of runs modelling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modelling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `MILL` step to the `DRILL` step.
+For a potential synthetic generation of runs modeling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modeling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `MILL` step to the `DRILL` step.
 
 #include "figures/direct_connect_drill_mill.typ"
 

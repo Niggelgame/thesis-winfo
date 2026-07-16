@@ -7,9 +7,9 @@ In this chapter we will first compare our prediction model with a random and an 
 
 == Baseline Comparisons<baseline>
 
-We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behaviour we model, or from the perspective of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the singular workpiece perspective. 
+We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behavior we model, or from the perspective of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the singular workpiece perspective. 
 
-Given by the data collection process, the runs produced as the validation data set are already provided from this perspective. Thus it remains to check the predictions.
+Given by the data collection process, the runs produced as the validation data set are already provided from this perspective. Thus, it remains to check the predictions.
 
 In the following we will refer to our model as a function $(n_1, ..., n_k) = "predict"(P, k)$, where $P$ is a run prefix and $k$ is the number of best next steps options after $P$ the model should output, ordered by their probability.
 
@@ -37,31 +37,31 @@ It is notable that this accuracy is higher than the accuracy measured during tra
 
 === Top-K Next Step Check
 
-This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behaviour if the processed workpiece is destined to be failing the quality control. Thus the predictor also can not catch any special structure pointing towards a failure. This means that after the quality control has started, both the quality control success and failure steps are both highly probably, the predictor has no way of knowing which one is correct.
+This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to be failing the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. This means that after the quality control has started, both the quality control success and failure steps are both highly probably, the predictor has no way of knowing which one is correct.
 
 By looking at the top $k$ options ordered by their probability instead of just the next step option with the highest probability, we can check that the prediction model captures the above structure correctly.
 
-We can simply adapt our scenario definitions from above to predict the $k$ most probably next steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$. We then change the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k (n_(i,j) = s_(i+1))$ we set $c_i = 1$, else $c_i = 0$. The accuracy measure definitions can remain the same.
+We can simply adapt our scenario definitions from above to predict the $k$ most probably next steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$. We then change the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k (n_(i,j) = s_(i+1))$, we set $c_i = 1$, else $c_i = 0$. The accuracy measure definitions can remain the same.
 
 With $k=2$, we can observe a top-2 accuracy of *our model* of *100%*. The _random_ baseline only predicts the top-2 events correctly with an accuracy of *5.36%*, the _empirical_ baseline has a *10.71%* accuracy.
 
 To put the prediction performance of our model into context, even with $k=10$, the random baseline only achieves an accuracy of 21.4%, the empirical baseline 57.14%. 
 
 
-== Generalisation Performance
+== Generalization Performance
 
-#cite(<generalisation>, form: "prose") highlight the importance of generalisation within the scope of next event prediction. Generalisation here refers to the ability to make correct predictions for traces with unseen behaviour, based on some implicit representation of the process structure within the model.
+#cite(<generalisation>, form: "prose") highlight the importance of generalization within the scope of next event prediction. Generalization here refers to the ability to make correct predictions for traces with unseen behavior, based on some implicit representation of the process structure within the model.
 
-While our general baseline evaluation cases in @baseline are measured on traces not seen during training, and we are using cross-validation and dropout to reduce overfitting and guide towards generalisation, we want to ensure that our model can cope with unseen behaviour not found within the original dataset. 
+While our general baseline evaluation cases in @baseline are measured on traces not seen during training, and we are using cross-validation and dropout to reduce overfitting and guide towards generalization, we want to ensure that our model can cope with unseen behavior not found within the original dataset. 
 
 We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected, thus robustness when dealing with such symptoms is desired.//#note[Duplicate scenario?] 
 We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
-An additional experimental evaluation to test our generalisation performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing multiple workpieces at once.
+An additional experimental evaluation to test our generalization performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing multiple workpieces at once.
 
 === Additional Random Events
 
-To simulate the arrival of highly delayed messages, we will insert random events into the prefix traces. The amount of insertions is controlled by a parameter $p$, describing the ratio of number of newly inserted events to the size of the original event sequence. To validate the correctness of the predicted step, we append the predicted next step to the _original prefix_ and check this for correctness.
+To simulate the arrival of highly delayed messages, we will insert random events into the prefix traces. The number of insertions is controlled by a parameter $p$, describing the ratio of number of newly inserted events to the size of the original event sequence. To validate the correctness of the predicted step, we append the predicted next step to the _original prefix_ and check this for correctness.
 
 We differentiate between two sub-scenarios:
 
@@ -138,7 +138,7 @@ By dropping $p$ parts of the run, except the last event, the accuracy only reduc
   )
 ]<p-dropout>
 
-The reduced rate of accuracy rate points towards good generalisation capabilities of the model when dealing with message drops. 
+The reduced rate of accuracy rate points towards good generalization capabilities of the model when dealing with message drops. 
 
 === Extended Input Run<extended-run>
 
@@ -146,11 +146,11 @@ The training data just contains traces of the APS, for which one workpiece was p
 
 This run has certain properties our training runs do not have, that can have an impact on the prediction quality:
 
-1. The run contains workpieces of multiple colors. Remember that we use special _meta_ color tokens to let the model know what kind of workpiece is processed in this sequence (see @model-architecture). Usually, this token is automatically prepended based on the trace metadata containing the color. Thus our automatic preprocessing can not handle the color changes in between the workpiece processes.
+1. The run contains workpieces of multiple colors. Remember that we use special _meta_ color tokens to let the model know what kind of workpiece is processed in this sequence (see @model-architecture). Usually, this token is automatically prepended based on the trace metadata containing the color. Thus, our automatic preprocessing cannot handle the color changes in between the workpiece processes.
 
 2. The run contains previously unseen parallelism. Especially the started processing of the first workpiece, while pieces are picked up from the DPS and passed to the HBW, lets the AGV continuously transfer between DPS, HBW and the processing workstation.
 
-3. The model outputs `<EOS>` tokens when it reaches what it learned to be the end of a sequence and thus a run. In the training data, every run ends after processing one piece. Here, the `<EOS>` should only be output after the processing of multiple workpieces. This type of generalization can not be expected from our model.
+3. The model outputs `<EOS>` tokens when it reaches what it learned to be the end of a sequence and thus a run. In the training data, every run ends after processing one piece. Here, the `<EOS>` should only be output after the processing of multiple workpieces. This type of generalization cannot be expected from our model.
 
 Due to the set of training data sequences never containing such parallel scenarios, there is no proper workaround for the second and third issues. One could retrain a new model on training data containing such runs or split the traces into multiple separate traces and thus create scenarios known to our model. Splitting the traces by workpiece order could create traces from the perspective of individual workpieces, reducing the parallelism and ending individual sequences properly, which our model is capable of handling - we do not evaluate this in this thesis, as our preprocessing is not able to handle multiple order distinctions. The coloring issue could be resolved at the time by adding additional color meta-tokens by hand into the token sequence, which would, however, also require changes to our processing specific to this sample.
 
@@ -159,7 +159,7 @@ The APS trace is processed following the same procedures for training and valida
 For simple next step prediction, our model has an accuracy of *45.25%*. Looking at the incorrect predictions, \~10% incorrectly assumed `<EOS>` matching our expectation from 3.
 An additional \~25% the model failed to predict additional AGV movements never seen in that context in the training data, and \~33% stem from the repeated picks and drops from the DPS and the HBW. The remaining failures can be mostly attributed to unknown process configurations from missing colors, as the model incorrectly predicts the sequences of process modules.
 
-Thus the accuracy, while seeming low, matches the expectations due the limits explained above. The hypothesis is supported by the accuracy of the top $2$ prediction of just *53.63%*, as many of the corrected step predictions from before are not even considered a valid option by the model.
+Thus, the accuracy, while seeming low, matches the expectations due the limits explained above. The hypothesis is supported by the accuracy of the top $2$ prediction of just *53.63%*, as many of the corrected step predictions from before are not even considered a valid option by the model.
 
 
 == Model Performance
