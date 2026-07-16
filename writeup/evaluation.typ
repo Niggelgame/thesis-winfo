@@ -15,7 +15,7 @@ In the following we will refer to our model as a function $(n_1, ..., n_k) = "pr
 
 === Simple Next Step Check<simple-scen>
 
-For each run $R = s_1 bullet ... bullet s_n$, where $s_j$ is a step token, we take all prefixes $P_i = s_1 bullet ... bullet s_i$ with $1 <= i < n$. We then let our model predict the most probable next step $n_i = "predict"(P_i, 1)$. If $n_i = s_(i+1)$, we set $c_i = 1$, else $c_i = 0$
+For each run $R = s_1 bullet ... bullet s_n$, where $s_j$ is a step token, we take all prefixes $P_i = s_1 bullet ... bullet s_i$ with $1 <= i < n$. We then let our model predict the most probable next step $n_i = "predict"(P_i, 1)$. If $n_i = s_(i+1)$, we set $c_i = 1$, else $c_i = 0$.
 
 We calculate the _run accuracy_ metric for each run as $A_R = 1/(n-1) sum_(i=1)^(n-1)c_i$, dividing the number of correctly predicted steps by the number of totally predicted steps.
 
@@ -27,17 +27,17 @@ $A = 1/(|"val"|) sum_(R in "val") A_R$
 
 We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a *random* next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-We also provide an *empirical* predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the dataset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
+We also provide an *empirical* predictor $"predict"''(R, k)$, that processes the initial training data set and extracts the number of times a token appeared in the dataset. We then order the tokens by descending count and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
-The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
+The random baseline is able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 
-Our model achieved an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process. This proves the model is learning about the sequential and causal relationships, and not only mimicking the frequency of contributions.
+Our model achieves an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process. This proves the model is learning about the sequential and causal relationships and not only mimicking the frequency of contributions.
 
-It is notable that this accuracy is higher than the accuracy measured during training, we expected this behavior due to the disabled dropout layer during evaluation.
+It is notable that this accuracy is higher than the accuracy measured during training; we expected this behavior due to the disabled dropout layer during evaluation.
 
 === Top-K Next Step Check
 
-This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to be failing the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are both highly probably, the predictor has no way of knowing which one is correct.
+This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to be failing the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are both highly probable; the predictor has no way of knowing which one is correct.
 
 We want to define a correctness measure that allows for lenience in the prediction due to the structure described above. Therefore, in the following, we check whether one of the top $k$ next step options ordered by their model output probability is correct instead of just the next step option with the highest probability.
 
@@ -193,9 +193,9 @@ Due to the set of training data sequences never containing such parallel scenari
 The APS trace is processed following the same procedures for training and validation data as seen in @data-col-and-proc. We then perform the same evaluation baseline evaluations as before.
 
 For simple next step prediction, our model has an accuracy of *45.25%*. Looking at the incorrect predictions, \~10% incorrectly assumed `<EOS>` matching our expectation from 3.
-An additional \~25% the model failed to predict additional AGV movements never seen in that context in the training data, and \~33% stem from the repeated picks and drops from the DPS and the HBW, stemming from the insertion of additional workpieces into the factory. The remaining failures can be mostly attributed to unknown process configurations from missing color information, as the model incorrectly predicts the sequences of process modules.
+An additional \~25% the model failed to predict additional AGV movements never seen in that context in the training data, and \~33% originate from the repeated picks and drops from the DPS and the HBW, stemming from the insertion of additional workpieces into the factory. The remaining failures can be mostly attributed to unknown process configurations from missing color information, as the model incorrectly predicts the sequences of process modules.
 
-Thus, the accuracy, while seeming low, matches the expectations due the limits explained above. The hypothesis is supported by the accuracy of the top $2$ prediction of just *53.63%*, as many of the corrected step predictions from before are not even considered a valid option by the model.
+Thus, the accuracy, while seeming low, matches the expectations due to the limits explained above. The hypothesis is supported by the accuracy of the top $2$ prediction of just *53.63%*, as many of the correct steps of the large trace are not even considered a valid option by the model.
 
 
 == Model Performance
@@ -207,5 +207,5 @@ floating-point parameters, thus VRAM with a fully loaded model usage is limited 
 
 The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times, later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction, however the current infrastructure does not provide the functionality for consistently keeping the model loaded.
 
-Combining these two results, we can infer that online usage is certainly possible with this model, even though it would require some infrastructure build-up to support live translation of the MQTT events into the steps, and pipelining that into the model.
+Combining these two results, we can infer that online usage is certainly possible with this model, even though it would require some infrastructure build-up to support live translation of the MQTT events into the steps and pipelining that into the model.
 

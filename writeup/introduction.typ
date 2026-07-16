@@ -31,11 +31,11 @@ In this work, we present an approach to use transformer networks to solve the ne
 
 We evaluate this approach on the Fischertechnik *Agile Production Simulator* (APS) #footnote[#link("https://www.fischertechnik.de/de-de/industrie-und-hochschulen/technische-dokumente/simulieren/agile-production-simulation")], providing the tools for end-to-end prediction. We extract process logs directly from the internal MQTT broker and then fit and train the model based on derived Heraklit steps. The model achieves an outstanding 91.07% mean accuracy on single next-event prediction. Even when simulating noisy MQTT logs by removing events or adding random events into the logs, similar results can still be achieved. // #todo[Fill in latest results]
 
-The structure of the thesis can be summarized as follows. @theory introduces the necessary background on Heraklit, Transformers and MQTT while providing information on theoretical prediction approach.
+The structure of the thesis can be summarized as follows. @theory introduces the necessary background on Heraklit, Transformers and MQTT while providing information on the theoretical prediction approach.
 
 @modelling then explains the chosen modeling approach of the Fischertechnik APS case study using Heraklit. Continuing into the technical details, @implementation provides a deeper dive into the details of the applied approach and the Fischertechnik data. 
 
-The case study model is lastly evaluated in @evaluation in various scenarios, before drawing conclusions, and discussing limitations and future work in @conclusion.
+The case study model is lastly evaluated in @evaluation in various scenarios, before drawing conclusions and discussing limitations and future work in @conclusion.
 
 // #todo[Now present my approach!]
 

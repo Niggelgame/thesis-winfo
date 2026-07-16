@@ -17,7 +17,7 @@ We can split and group the steps by the relevant factory modules:
 - Delivery and Pickup Station (*DPS*): It serves as the point of input and output of the factory. New workpieces are _inserted_ here, processed workpieces are _shipped off_. The included NFC reader starts the tracking of workpieces across the factory.
 - Drilling Station (*DRILL*): It performs a simulated drilling operation on the workpieces, picking them up from and dropping them onto the AGV.
 - Milling Station (*MILL*): It performs a simulated milling operation on the workpieces, picking them up from and dropping them onto the AGV.
-- Quality Control with AI (*AIQS*): Checks the quality of a workpiece using a camera and color sensor. If a failure occurred - represented by a erroneous print on the workpiece - the workpiece is discarded.
+- Quality Control with AI (*AIQS*): Checks the quality of a workpiece using a camera and color sensor. If a failure occurred - represented by an erroneous print on the workpiece - the workpiece is discarded.
 - Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus, for our modeling purposes, it will be the glue that connects the modules together.
 
 == AGV
@@ -64,7 +64,7 @@ Next we will look at the individual process module actions.
 
 The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage, and of dropping workpieces from storage onto the AGV. 
 
-This might seem like actions that require a lot of control, first due to needing to select what workpiece should be extracted from storage, and second due to storage management itself.
+These might seem like actions that require a lot of control, first due to needing to select what workpiece should be extracted from storage, and second due to storage management itself.
 
 However, the Fischertechnik simplified both control challenges by 
 
@@ -89,9 +89,9 @@ These runs are exemplary for all module `Pick` and `Drop` runs, as they always f
 
 == DPS
 
-The DPS is responsible for insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
+The DPS is responsible for the insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory is represented by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
 
-Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose to not model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
+Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similar to the physical actuator control done by the Siemens SPS, we choose not to model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
 
 Notably, the `DPS Drop` step is the only step that can introduce a new workpiece into the factory. New workpieces are generally first stored into the HBW and then extracted again with an order, even if an order for that piece is already present. 
 
@@ -104,7 +104,7 @@ We do not need to introduce any additional new steps, as again the abstraction g
 
 Like all other physical modules, the drill process module has to interact with the AGV to process workpieces. Therefore the `Pick` and `Drop` template is defined for it as well.
 
-Additionally, this is the first module to perform a certain module-specific action observable via the MQTT logs. This unique action is simulated drilling of a hole into the workpiece, which can again succeed or fail. The matching Heraklit step definitions can be seen in @drill-drill-steps. Notice that 
+Additionally, this is the first module to perform a certain module-specific action, observable via the MQTT logs. This unique action is simulated drilling of a hole into the workpiece, which can again succeed or fail. The matching Heraklit step definitions can be seen in @drill-drill-steps. Notice that 
 
 1. We require a workpiece to be picked up from the AGV to be able to start the drill action by consuming the token at the place `Finish DRILL Pick`.
 2. We do not require the AGV to be at the drill module during the drilling steps, opening up the future possibility of having multiple modules process workpieces simultaneously within the same model, as the AGV can drive to a different station during processing at the drill.
@@ -130,7 +130,7 @@ $&#[*DRILL Drill success*] &= &#[*DRILL Drill*] bullet #[*DRILL Drilled*] \
 == MILL
 
 
-Similarly to the drill, the mill process module performs a simulated action, but it is an operation to simulate milling a groove into the workpiece instead of the drilling operation. It again also contains the template `Pick` and `Drop` steps. 
+Similar to the drill, the mill process module performs a simulated action, but it is an operation to simulate milling a groove into the workpiece instead of the drilling operation. It again also contains the template `Pick` and `Drop` steps. 
 
 The steps are defined identically modulo renaming in @mill-mill-steps. Thus, the same properties hold and the runs can be composed in a similar fashion as in @drill-drill-run and @drill-drill-run-failure.
 
@@ -158,7 +158,7 @@ A composed success run of the AIQS can be seen in @aiqs-check-run, the failure i
 
 The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
-Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, is *implicit* or *invisible* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
+Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, are *implicit* or *invisible* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
 This means that the CCU steps will and cannot be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
 
 For a potential synthetic generation of runs modeling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modeling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `MILL` step to the `DRILL` step.
@@ -175,7 +175,7 @@ Technically, this restriction is applied by creating a global shared place calle
 
 This new design does not directly solve the issue of these control steps missing in the logs, but provides a simple solution. By composing $"DRILL Dropped" bullet "Implicit DRILL end"$ and $"Implicit MILL start" bullet "MILL Pick"$ we create a run module that essentially just changes the interfaces of the module steps to have the `Next Module Ready` place instead of their respective `Start` and `Finish` places. These newly composed models can be then again composed directly via the `Next Module Ready`. 
 
-As we know that before and after all module actions their steps will need their one matching `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
+As we know that before and after all module actions their steps will need their corresponding `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
 
 For example, if the logs contain the steps
 

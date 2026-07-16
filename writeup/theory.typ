@@ -30,7 +30,7 @@ Heraklit modules are conceptually modeled using graphs, with inner vertices and 
   
   $|{a' < a and a' "is" lambda-"labeled" | A}| = |{b' < b and b' "is" lambda-"labeled" | B}|$, 
   
-  ensuring the number of $lambda-"labeled"$ gates that are smaller than $a$ in $A$ is equal to the number of $lambda-"labeled"$ gates that are smaller than $b$ in $B$. A gate of $A$ that does not belong to a match of $A$ and $B$ is _match free_ with respect to $B$. 
+  ensuring the number of $lambda-"labeled"$ gates that are smaller than $a$ in $A$ is equal to the number of $lambda-"labeled"$ gates that are smaller than $b$ in $B$. A gate of $A$ that does not belong to a match of $A$ and $B$ is _match-free_ with respect to $B$. 
 
   - Let _matches($A, B$)_ be the set of all matches of $A$ and $B$.
   - Let _matchfree($A, B$)_ be the set of all elements of $A$ that do not belong to a match of $A$ and $B$. 
@@ -38,7 +38,7 @@ Heraklit modules are conceptually modeled using graphs, with inner vertices and 
 
 
 #definition("Module")[
-  A module $M = (V, E)$ is a directed graph, together with two interfaces $"*"M subset.eq M$ and $M"*" subset.eq M$ of nodes of M.  The interfaces $"*"M$ and $M"*"$ are the _left_ and _right_ interfaces of $M$ respectively. 
+  A module $M = (V, E)$ is a directed graph together with two interfaces $"*"M subset.eq M$ and $M"*" subset.eq M$ of nodes of M.  The interfaces $"*"M$ and $M"*"$ are the _left_ and _right_ interfaces of $M$ respectively. 
 ]
 
 
@@ -70,13 +70,13 @@ Module Composition holds two important properties:
 - *Associativity*: Let $A, B, C$ be modules. Then $(A bullet B) bullet C = A bullet (B bullet C)$. This property allows us to ignore the brackets in composition, and merge multiple submodules in arbitrary orders.
 - *Commutativity* without shared gates: Let $A, B$ be modules. $A bullet B = B bullet A$ iff $A$ and $B$ share no equal interface labels. This will be of high interest when composing modules without causal relationships. Their interface would not share any labels, so the order of their composition also does not matter.
 
-Note how in #ref_def("Module") there is no notion of any dynamics yet. Heraklit follows the idea of petri nets to model the dynamics, so we will now refine our definitions to separate the graph nodes into alternating _places_ and _transitions_.
+Note how in #ref_def("Module") there is no notion of any dynamics yet. Heraklit follows the idea of Petri nets to model the dynamics, so we will now refine our definitions to separate the graph nodes into alternating _places_ and _transitions_.
 
 #definition("Net Graph")[
   Let $G = (V, E)$ be a graph, and let $P$ and $T$ be two disjoint sets with elements called _places_ and _transitions_, respectively, such that:
 
   1. $P union T = V$;
-  2. For each edge $(x, y) in E$ holds: either $x in P$ and $y in T$, or $x in T$ and $y in P$.
+  2. For each edge $(x, y) in E$, it holds that: either $x in P$ and $y in T$, or $x in T$ and $y in P$.
 
   Then $G$ is a _net graph_, and we write $G = (P, T; E)$
 ]
@@ -169,7 +169,7 @@ We can examine these definitions on our example from above by defining the follo
 
 #include "figures/theory/steps_sample.typ"
 
-To keep it simple, the labels of the step modules are the same as the labels of the transitions contained within them. The transitions on the left and right on the edge of the module border are the left and right interfaces, respectively. By the layout of the steps one can already grasp as to how valid runs could look. 
+To keep it simple, the labels of the step modules are the same as the labels of the transitions contained within them. The transitions on the left and right on the edge of the module border are the left and right interfaces, respectively. By the layout of the steps, one can already grasp as to how valid runs could look. 
 
 By our definitions of composition, we already know that 
 
@@ -186,7 +186,7 @@ To make use of this definition, we first need to model a system by providing the
 
 === MQTT<mqtt-theory>
 
-MQTT is a client-server protocol using a publish/subscribe pattern. It is considered the most favorable connection pool for Internet of Things (IoT) applications @mqtt.
+MQTT is a client-server protocol using a publish/subscribe pattern. It is considered the most favorable connection protocol for Internet of Things (IoT) applications @mqtt.
 
 With MQTT, clients can connect to the server, a _broker_, and _publish_ some information to a _topic_. Other clients can connect to the same broker, and _subscribe_ to certain topics. Whenever new messages are published to a topic this client is subscribed to, the broker pushes this message to the client. Clients can be _publishers_ (or sources) and _subscribers_ (or sinks) at the same time. Thus, MQTT is a many-to-many communication protocol. 
 
@@ -194,7 +194,7 @@ It provides three levels of Quality of Service (QoS), which can deal differently
 
 1. QoS 0: At most once. The message is sent to all subscribers only once. It is not stored on the broker, and if delivery was not successful, no redistribution is planned. It is also known as _"fire and forget"_.
 2. QoS 1: At least once. The message is repeatedly sent to all subscribers that have not acknowledged the message yet, marking every message from the second send on using the `DUP` flag. The message is stored at the broker until all subscribers have received the message.
-3. QoS 2: Exactly once. Similarly to QoS 1, the broker stores the message and resends it. However, the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
+3. QoS 2: Exactly once. Similar to QoS 1, the broker stores the message and resends it. However, the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
 
 The Fischertechnik APS uses MQTT as its main channel of communication between the different production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
 
@@ -204,15 +204,15 @@ We describe the exact _processing_ of the Fischertechnik MQTT messages and _conv
 
 == Transformer<transformer>
 
-Over the last decade, research mostly identified deep-learning approaches as an advancement over traditional machine learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorical variables, traditional machine learning approaches start to show their weaknesses @rf-bad.
+Over the last decade, research mostly identified deep-learning approaches as an advancement over traditional machine-learning approaches for predictive process monitoring @fettke-deep-learning-proc-pred @ppm26 @deep-learning-process-pred @proc-pred-dl. Especially with a lot of different events requiring high cardinality categorical variables, traditional machine-learning approaches start to show their weaknesses @rf-bad.
 
-While using Long Short-Term-Memory models (LSTMs), a special version of recurring neural networks (RNN) showed it successes @lstmref1 @lstmref2, later state-of-the-art models use the transformer architecture @transformerpred1 @transformerpred2.
+While using Long Short-Term-Memory models (LSTMs), a special version of recurrent neural networks (RNNs), showed their success @lstmref1 @lstmref2, later state-of-the-art models use the transformer architecture @transformerpred1 @transformerpred2.
 
 === Transformer Architecture
 
 First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250,000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
 
-The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focused on next token generation only. 
+The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: the `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used a `Decoder`-only architecture @gpt-1 @gpt-2, as it is focused on next token generation only. 
 
 As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that submodule.
 
@@ -221,9 +221,9 @@ Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as
 
 Next follows a _positional encoding_, where fixed geometrically decreasing frequencies are added to the input embeddings to encode the position of the token within the sequence. As no further weight is given to the explicit original sequence order in the following steps, this encoding provides the only way to distinguish two tokens' distance in the upcoming layers. 
 
-The now properly embedded sequence is now passed through $d_("layer")$ repetitions of the transformer blocks. They each again consist of three sublayers, connected each by a layer normalization. Assuming input $x$ to a sublayer and $"Sublayer"(x)$ the function performed by the sublayer, the output is $"LayerNorm"(x + "SubLayer"(x))$, to keep the output stable without any unexpected outliers complicating the gradient descent during training.
+The now properly embedded sequence is now passed through $d_("layer")$ repetitions of the transformer blocks. They each again consist of three sublayers, each connected by a layer normalization. Assuming input $x$ to a sublayer and $"Sublayer"(x)$ the function performed by the sublayer, the output is $"LayerNorm"(x + "SubLayer"(x))$, to keep the output stable without any unexpected outliers complicating the gradient descent during training.
 
-Two of the sublayers are _Multi-Head Attention Layers_. Here the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V in RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The results are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
+Two of the sublayers are _Multi-Head Attention Layers_. Here, the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V in RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The results are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
 
 #align(center)[$"Attention"(Q_i, K_i, V_i) = "softmax"("mask"(Q_i K_i^T)/(sqrt(d_k))))V_i$]
 
@@ -237,13 +237,13 @@ This computation can be intuitively understood as follows.
 
 The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatenated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
 
-The third sublayer of the transformer block is a simple 2-layer fully-connected feed-forward network with a ReLU activation function. The input and output layers have dimension $d_("model")$ and the inner layer $d_("dim_ff")$.
+The third sublayer of the transformer block is a simple 2-layer fully connected feed-forward network with a ReLU activation function. The input and output layers have dimension $d_("model")$ and the inner layer $d_("dim_ff")$.
 
 After the transformer blocks, we need to extract the next token. Similarly to the initial embedding, we now need to map the embedded $d_("ctx")$ $d_("model")$-dimensional vectors back to our tokens. We again apply a learnable linear layer to the embedding, resulting in vectors the same size as the vocab with all tokens. After normalization, the vector at position $i$ contains a probability distribution over the token at position $i+1$.
 
 #line()
 
-We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource should operate in a scale that are not a concern for us. 
+We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource consumption should operate on a scale that is not a concern for us in the first place. 
 
 === Model Training
 
@@ -256,7 +256,7 @@ Using cross validation on k-fold splits of the training data, we search through 
 
 === Technical requirements for Process Prediction
 
-Some approaches to apply the transformer architecture rely on natural language to express the processes steps @llm-proc-pred. However, this approach requires the model not only learning things about the process, but also understanding the language.
+Some approaches to apply the transformer architecture rely on natural language to express the process steps @llm-proc-pred. However, this approach requires the model not only learning things about the process, but also understanding the language.
 
 Our approach to use the transformer architecture therefore relies on training a _smaller_#footnote[Compared to a typical natural language model by the number of learnable parameters] model following the original transformer architecture from scratch. 
 
@@ -267,7 +267,7 @@ The characterizing attention mechanism allows the model to learn causal relation
 
 Lastly, the transformer architecture is highly scalable, from a small model with only a few layers and attention heads to represent a small process without parameters and few causal relationships, up to models with billions of parameters to represent highly complex processes on huge datasets. Even though we are using our technique on an experimental scale, the scalability allows the model architecture to be applied to a wider range of process prediction problems.
 
-For the Fischertechnik APS, we are required us to encode our Heraklit steps into _tokens_. We choose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one can could encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. 
+For the Fischertechnik APS, we are required to encode our Heraklit steps into _tokens_. We choose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one could encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. 
 
 The output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution.
 
