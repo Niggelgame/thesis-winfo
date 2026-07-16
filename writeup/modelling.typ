@@ -26,7 +26,7 @@ We can split and group the steps by the relevant factory modules:
 
 We start by modelling the AGV. It is the main source of interaction in the APS, however it can only perform one action by itself, which is moving from one processing module to the next. As we want to have one token per step, we need to create multiple *move AGV* steps.
 
-For each module $#[`M1`] in {"DPS, HBW, DRILL, MILL, AIQS"} := M$ we need to have a move step to each module $#[`M2`] in M \\ {m}$. Thus in the following step module template, we get all possible *move AGV* steps by instantiating `M1` and `M2` with all possible combinations.
+For each module $#[`M1`] in {"DPS, HBW, DRILL, MILL, AIQS"} := M$ we need to have a move step to each module $#[`M2`] in M \\ {#[`M1`]}$. Thus in the following step module template, we get all possible *move AGV* steps by instantiating `M1` and `M2` with all possible combinations.
 
 
 #include "figures/agv/steps.typ"
@@ -43,7 +43,7 @@ domain
 process-module: {DPS, HBW, DRILL, MILL, AIQS}
 ```
 
-Important to notice is that depending on which *AGV move* step is taken, different step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at MOD` place.
+Important to notice is that depending on which *AGV move* step is taken, only certain step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at M1` place, with `M1`$in M$.
 
 === Picking and Dropping
 

@@ -1,4 +1,4 @@
-@article{heraklit,
+@article{heraklit-preprint,
   author    = {Peter Fettke and
                Wolfgang Reisig},
   title     = {Modelling service-oriented systems and cloud services with Heraklit},
@@ -13,11 +13,27 @@
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
 
+@InProceedings{heraklit,
+author="Fettke, Peter
+and Reisig, Wolfgang",
+title="Modelling Service-Oriented Systems and Cloud Services with Heraklit",
+booktitle="Advances in Service-Oriented and Cloud Computing",
+year="2021",
+doi={10.1007/978-3-030-71906-7_7},
+publisher="Springer International Publishing",
+address="Cham",
+pages="77--89",
+abstract="Modern and next generation digital infrastructures are technically based on service oriented structures, cloud services, and other architectures that compose large systems from smaller subsystems. The composition of subsystems is particularly challenging, as the subsystems themselves may be represented in different languages, modelling methods, etc. It is quite challenging to precisely conceive, understand, and represent this kind of technology, in particular for a given level of abstraction. To capture refinement and abstraction principles, various forms of ``technology stacks'' and other semi-formal or natural language based on presentations have been suggested. Generally, useful concepts to compose such systems in a systematic way are even more rare. Heraklit provides means, principles, and unifying techniques to model and to analyze digital infrastructures. Heraklit integrates composition and hierarchies of subsystems, concrete and abstract data structures, as well as descriptions of behaviour. A distinguished set of means supports the modeler to express their ideas. The modeller is free to choose the level of abstraction, as well as the kind of composition. Heraklit integrates new concepts with tried and tested ones. Such a framework provides the foundation for a comprehensive Systems Mining as the next step after Process Mining.",
+isbn="978-3-030-71906-7"
+}
+
+
 @book{ppm26,
   title={Predictive Process Monitoring},
   author={Di Francescomarino, Chiara and Donadello, Ivan and Maggi, Fabrizio Maria},
   booktitle={Predictive Process Monitoring},
   year={2026},
+  doi={10.1007/978-3-031-08848-3_10},
   publisher={Springer}
 }
 
@@ -32,6 +48,7 @@ year="2006",
 publisher="Springer Berlin Heidelberg",
 address="Berlin, Heidelberg",
 pages="454--466",
+doi={10.1007/11678564_42},
 abstract="Business Process Management is considered an essential strategy to create and maintain competitive advantage by streamlining and monitoring corporate processes. While the identification of critical success factors for the management of business process related projects has been addressed by some research projects, the risks associated with these projects have received considerably less attention. This is a concern: Although BPM projects contain phases that relate to traditional software development and deployment projects, the application of risk mitigation strategies found in software engineering ignores the subsequent process management phases that follow upon the implementation and automation of processes. This paper provides an overview of risks associated with BPM projects along the phases of the BPM lifecycle. After a classification of the risks identified with individual lifecycle phases and transitions we discuss four strategies to deal with these risks: avoidance, mitigation, transfer, and acceptance. The outlook of this paper discusses how assessment frameworks such as CobIT and COSO can be applied to risk management in the context of BPM.",
 isbn="978-3-540-32596-3"
 }
@@ -40,10 +57,10 @@ isbn="978-3-540-32596-3"
 author="van der Aalst, Wil",
 title="Data Science in Action",
 bookTitle="Process Mining: Data Science in Action",
+edition={2},
 year="2016",
 publisher="Springer Berlin Heidelberg",
 address="Berlin, Heidelberg",
-pages="3--23",
 abstract="In recent years, data science emerged as a new and important discipline. It can be viewed as an amalgamation of classical disciplines like statistics, data mining, databases, and distributed systems. Existing approaches need to be combined to turn abundantly available data into value for individuals, organizations, and society. Moreover, new challenges have emerged, not just in terms of size (``Big Data'') but also in terms of the questions to be answered. This book focuses on the analysis of behavior based on event data. Process mining techniques use event data to discover processes, check compliance, analyze bottlenecks, compare process variants, and suggest improvements. In later chapters, we will show that process mining provides powerful tools for today's data scientist. However, before introducing the main topic of the book, we provide an overview of the data science discipline.",
 isbn="978-3-662-49851-4",
 doi="10.1007/978-3-662-49851-4_1",
@@ -73,6 +90,7 @@ isbn="978-3-319-59536-8"
   author={Camargo, Manuel and Dumas, Marlon and Gonz{\'a}lez-Rojas, Oscar},
   booktitle={International Conference on Business Process Management},
   pages={286--302},
+  doi={10.1007/978-3-030-26619-6_19},
   year={2019},
   organization={Springer}
 }
@@ -117,7 +135,6 @@ DOI = {10.3390/electronics12061273}
   title        = {Modularization, Composition, and Hierarchization of Petri Nets with
                   Heraklit},
   journal      = {CoRR},
-  volume       = {abs/2202.01830},
   year         = {2022},
   url          = {https://arxiv.org/abs/2202.01830},
   eprinttype   = {arXiv},
@@ -206,33 +223,26 @@ abstract = {Random forest is a flexible algorithm with a wide range of applicati
 }
 
 
-@incollection{proc-mining,
-  title={Data science in action},
-  author={Van Der Aalst, Wil},
-  booktitle={Process mining: Data science in action},
-  pages={3--23},
-  year={2016},
-  publisher={Springer}
-}
-
 @article{proc-pred-dl,
   title={Predicting process behaviour using deep learning},
   author={Evermann, Joerg and Rehse, Jana-Rebecca and Fettke, Peter},
   journal={Decision Support Systems},
   volume={100},
+  doi = {10.1016/j.dss.2017.04.003},
   pages={129--140},
   year={2017},
   publisher={Elsevier}
 }
 
 @article{generalisation,
-  title={Learning from the Data to Predict the Process: P. Pfeiffer et al.},
+  title={Learning from the Data to Predict the Process},
   author={Pfeiffer, Peter and Abb, Luka and Fettke, Peter and Rehse, Jana-Rebecca},
   journal={Business \& Information Systems Engineering},
   volume={67},
   number={3},
   pages={357--383},
   year={2025},
+  doi={10.1007/s12599-025-00936-4},
   publisher={Springer}
 }
 
@@ -283,7 +293,7 @@ url = {https://doi.org/10.1145/3600006.3613165},
 doi = {10.1145/3600006.3613165},
 abstract = {High throughput serving of large language models (LLMs) requires batching sufficiently many requests at a time. However, existing systems struggle because the key-value cache (KV cache) memory for each request is huge and grows and shrinks dynamically. When managed inefficiently, this memory can be significantly wasted by fragmentation and redundant duplication, limiting the batch size. To address this problem, we propose PagedAttention, an attention algorithm inspired by the classical virtual memory and paging techniques in operating systems. On top of it, we build vLLM, an LLM serving system that achieves (1) near-zero waste in KV cache memory and (2) flexible sharing of KV cache within and across requests to further reduce memory usage. Our evaluations show that vLLM improves the throughput of popular LLMs by 2--4\texttimes{} with the same level of latency compared to the state-of-the-art systems, such as FasterTransformer and Orca. The improvement is more pronounced with longer sequences, larger models, and more complex decoding algorithms. vLLM's source code is publicly available at https://github.com/vllm-project/vllm.},
 booktitle = {Proceedings of the 29th Symposium on Operating Systems Principles},
-pages = {611–626},
+pages = {611-626},
 numpages = {16},
 location = {Koblenz, Germany},
 series = {SOSP '23}
@@ -304,6 +314,7 @@ series = {SOSP '23}
 @article{gpt-1,
   title={Improving language understanding by generative pre-training},
   author={Radford, Alec and Narasimhan, Karthik and Salimans, Tim and Sutskever, Ilya and others},
+  journal={OpenAI blog},
   year={2018},
   publisher={San Francisco, CA, USA}
 }
@@ -312,9 +323,6 @@ series = {SOSP '23}
   title={Language models are unsupervised multitask learners},
   author={Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya and others},
   journal={OpenAI blog},
-  volume={1},
-  number={8},
-  pages={9},
   year={2019}
 }
 
@@ -333,32 +341,24 @@ series = {SOSP '23}
   url = {https://www.fischertechnik.de/de-de/industrie-und-hochschulen/technische-dokumente/simulieren/agile-production-simulation#uebersicht},
 }
 
-@misc{adam-optim,
+@inproceedings{adam-optim,
       title={Adam: A Method for Stochastic Optimization}, 
       author={Diederik P. Kingma and Jimmy Ba},
       year={2017},
       eprint={1412.6980},
+      booktitle={International Conference on Learning Representations},
       archivePrefix={arXiv},
       primaryClass={cs.LG},
       url={https://arxiv.org/abs/1412.6980}, 
 }
 
-@misc{adamw-optimizer,
+@inproceedings{adamw-optimizer,
       title={Decoupled Weight Decay Regularization}, 
       author={Ilya Loshchilov and Frank Hutter},
       year={2019},
       eprint={1711.05101},
+      booktitle={International Conference on Learning Representations},
       archivePrefix={arXiv},
       primaryClass={cs.LG},
       url={https://arxiv.org/abs/1711.05101}, 
-}
-
-@article{dropout-ppm-lstm,
-  title={Predicting process behaviour using deep learning},
-  author={Evermann, Joerg and Rehse, Jana-Rebecca and Fettke, Peter},
-  journal={Decision Support Systems},
-  volume={100},
-  pages={129--140},
-  year={2017},
-  publisher={Elsevier}
 }

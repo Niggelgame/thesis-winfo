@@ -46,7 +46,7 @@
     line("in1", "step1", mark: (end: ">", fill: black), stroke: 2pt)
     
     line("step1", "place1", name: "edge1", mark: (end: ">", fill: black), stroke: 2pt)
-    content("edge1", name: "edge1-label", [#v(16pt) y])
+    // content("edge1", name: "edge1-label", [#v(16pt) y])
   })
 ]]
   

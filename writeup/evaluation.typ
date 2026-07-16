@@ -21,13 +21,13 @@ We calculate the _run accuracy_ metric for each run as $A_R = 1/(n-1) sum_(i=1)^
 
 As different runs have different lengths $n$, the total _accuracy_ of our model on the validation set is calculated by an average over all run accuracies, as otherwise longer runs would be deemed more important than short ones. This should not be the case, as especially shorter runs contain the failure cases, resulting in an early process abort.
 
-We therefore calculate the _accuracy_ as
+We therefore calculate the _accuracy_ over our validation set of runs $"val"$ as
 
 $A = 1/(|"val"|) sum_(R in "val") A_R$
 
-We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a _random_ next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
+We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a *random* next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-We also provide an empirical predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the dataset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
+We also provide an *empirical* predictor $"predict"''(R, k)$, that processes the initial training data set and extracts number of times a token appeared in the dataset. We then order the tokens by descending count, and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
 The random baseline was able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 
@@ -41,11 +41,11 @@ This scenario tries to adapt to an issue found in the Fischertechnik APS simulat
 
 By looking at the top $k$ options ordered by their probability instead of just the next step option with the highest probability, we can check that the prediction model captures the above structure correctly.
 
-We can simply adapt our scenario definitions from above to predict the $k$ different steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$ and changing the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k n_(i,j) = s_(i+1)$ we set $c_i = 1$, else $c_i = 0$. The accuracy measure definitions can remain the same.
+We can simply adapt our scenario definitions from above to predict the $k$ most probably next steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$. We then change the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k (n_(i,j) = s_(i+1))$ we set $c_i = 1$, else $c_i = 0$. The accuracy measure definitions can remain the same.
 
-With $k=2$, we can observe a top-k accuracy of *our model* of *100%*. The random baseline only predicts the top 2 events correctly with an accuracy of *5.36%*, the empirical baseline has a *10.71%* accuracy.
+With $k=2$, we can observe a top-2 accuracy of *our model* of *100%*. The _random_ baseline only predicts the top-2 events correctly with an accuracy of *5.36%*, the _empirical_ baseline has a *10.71%* accuracy.
 
-For comparison, even with $k=10$, the random baseline only achieves an accuracy of 21.4%, the empirical baseline *57.14%*. 
+To put the prediction performance of our model into context, even with $k=10$, the random baseline only achieves an accuracy of 21.4%, the empirical baseline 57.14%. 
 
 
 == Generalisation Performance

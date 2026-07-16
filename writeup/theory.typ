@@ -124,7 +124,7 @@ Modern enterprise systems collect huge amounts of data of process executions in 
 
 Process prediction is concerned with predicting *possible outcomes* of ongoing traces. This prediction can be performed online, meaning while the execution of the process happens, such that unwanted outcomes can be prevented by preemptively changing the execution based on the prediction. 
 
-Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or finer-grained information, such as the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @proc-mining.
+Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or finer-grained information, such as the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @procmining16.
 
 In this work, we will focus on predicting the next event of a process.
 
