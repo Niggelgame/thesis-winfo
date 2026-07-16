@@ -2,7 +2,7 @@
 #import "@preview/cetz:0.5.0": canvas, draw
 #import "lib.typ": *
 
-= Modelling<modelling>
+= Heraklit Modelling<modelling>
 
 This section marks the beginning of our case study, showcasing the approach of using Heraklit and the Transformer architecture to perform next-step process prediction.
 
@@ -20,9 +20,7 @@ We can split and group the steps by the relevant factory modules:
 - Quality Control with AI (*AIQS*): Checks the quality of a workpiece using a camera and color sensor. If a failure occurred - represented by a erroneous print on the workpiece - the workpiece is discarded.
 - Central Control Unit (*CCU*): It is the central controller of the factory. While it has no physical representation in the factory, it is the centralized decision maker of the factory, synchronizing the different distributed modules. Thus for our modelling purposes, it will be the glue that connects the modules together.
 
-== Heraklit Step Modelling
-
-=== AGV
+== AGV
 
 We start by modelling the AGV. It is the main source of interaction in the APS, however it can only perform one action by itself, which is moving from one processing module to the next. As we want to have one token per step, we need to create multiple *move AGV* steps.
 
@@ -45,7 +43,7 @@ process-module: {DPS, HBW, DRILL, MILL, AIQS}
 
 Important to notice is that depending on which *AGV move* step is taken, only certain step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at M1` place, with `M1`$in M$.
 
-=== Picking and Dropping
+== Picking and Dropping
 
 All other modules need to physically interact with the remaining factory by picking up workpieces from the AGV or dropping workpieces onto the AGV. This workflow is generally the same over all modules, thus to reduce wasted space, we again fall back to modelling these steps using the following template, with #block(breakable: false)[$#[`MOD`] in {"DPS, HBW, DRILL, MILL, AIQS"}$]
 
@@ -62,7 +60,7 @@ Two points should be highlighted:
 
 Next we will look at the individual process module actions.
 
-=== HBW
+== HBW
 
 The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage, and of dropping workpieces from storage onto the AGV. 
 
@@ -89,7 +87,7 @@ $&#[*HBW Pick success*] &= &#[*HBW Pick*] bullet #[*HBW Picked*] \
 
 These runs are exemplary for all module `Pick` and `Drop` runs, as they always follow the same structure. 
 
-=== DPS
+== DPS
 
 The DPS is responsible for insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
 
@@ -102,7 +100,7 @@ The failure case of a `DPS Drop` could require different processing than other d
 We do not need to introduce any additional new steps, as again the abstraction given through the MQTT traces does not provide further details.
 
 
-=== DRILL
+== DRILL
 
 Like all other physical modules, the drill process module has to interact with the AGV to process workpieces. Therefore the `Pick` and `Drop` template is defined for it as well.
 
@@ -129,7 +127,7 @@ $&#[*DRILL Drill success*] &= &#[*DRILL Drill*] bullet #[*DRILL Drilled*] \
 
 
 
-=== MILL
+== MILL
 
 
 Similarly to the drill, the mill process module performs a simulated action, but it is an operation to simulate milling a groove into the workpiece instead of the drilling operation. It again also contains the template `Pick` and `Drop` steps. 
@@ -138,7 +136,7 @@ Thus the steps are defined identically modulo renaming in @mill-mill-steps. Thus
 
 #include "figures/mill/steps_mill.typ"
 
-=== AIQS
+== AIQS
 
 The last physical module is the AIQS, which provides a quality control checkpoint for all orders. To simulate failure within the APS, workpieces inserted into the factory at the DPS are designated `fail` or `pass` pieces, determined by a print on top of the piece. Using a camera and a color sensor, it can detect these faults and then discard faulty pieces into a trash chute, while passing good pieces on. 
 
@@ -156,7 +154,7 @@ A composed success run of the AIQS can be seen in @aiqs-check-run, the failure i
 #include "figures/aiqs/run_aiqs_fail.typ"
 
 
-=== CCU
+== CCU
 
 The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
@@ -169,7 +167,7 @@ For a potential synthetic generation of runs modelling the different variations 
 
 This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with increases in modules, and again exponential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
 
-We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all processing parts of a singular workpiece are always only present in one processing module's action, these actions don't need to be able to run concurrently. 
+We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all processing parts of a singular workpiece are always only present in one processing module's action, these actions do not need to be able to run concurrently. 
 
 Technically, this restriction is applied by creating a global shared place called `Next Module Ready`. Whenever a module wants to start, it needs to consume this place, whenever it is finished, it will fill the place again. Following the example from before, this creates the new steps in @implicit-connect-drill-mill. 
 

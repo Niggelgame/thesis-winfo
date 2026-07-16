@@ -12,7 +12,5 @@
 }
 
 #let ref_def = (title) => {
-  context[
-    #link(label(title))[_Def. #def_count.at(label(title)).first()_]
-  ]
+  context[#link(label(title))[_Def. #def_count.at(label(title)).first()_]]
 }

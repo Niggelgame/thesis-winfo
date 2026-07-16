@@ -1,9 +1,11 @@
 #import "@preview/benplate:0.1.0": todo, note, prose
 
 
-= Conclusion<conclusion>
+= Conclusion and Future Work<conclusion>
 
-This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, under concurrent and parallel systems. This approach starts by modelling relevant events as Heraklit _steps_ @heraklit, which are then interpreted as _tokens_ for a modified transformer architecture by #prose([@attention]). 
+== Conclusion
+
+This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, under concurrent systems. This approach starts by modelling relevant events as Heraklit _steps_ @heraklit, which are then interpreted as _tokens_ for a modified transformer architecture by #prose([@attention]). 
 
 To evaluate the approach, we introduce a _correctness_ measure of a prediction based on prefix runs. We rely on the Heraklit composition calculus to allow arbitrary ordering of causally unrelated events, while enforcing the order of causally related events. 
 
@@ -35,5 +37,5 @@ We perform no comparison to other prediction-model architectures, as this would 
 Some further actions on the basis of our model could be to
 
 - Extend our discrete pipeline into one continuous live algorithm, that can consume the live logs as an input and output concrete predictions as an output. This should be straight-forward, as the singular steps of the pipeline already exist, however the current pipeline would need to be adjusted to combine all scripts into one module.
-- Focus on explainability of the model. During generalisation testing, we realised that especially the last token has a big influence on the next predictions. An analysis to identify which parts of the sequence the model puts its _attention_ to would increase explainability, and thus trust into the model.
+- Focus on explainability of the model. During generalisation testing, we realized that especially the last token has a big influence on the next predictions. An analysis to identify which parts of the sequence the model puts its _attention_ to would increase explainability, and thus trust into the model.
 - Extend the Fischertechnik APS software to create early indicators for failure during the process, such as milling longer or by providing simulated tool wear. This would ensure that a process prediction on the APS can base failure or success predictions on run information.   

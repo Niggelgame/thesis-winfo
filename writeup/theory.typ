@@ -130,7 +130,7 @@ In this work, we will focus on predicting the next event of a process.
 
 === Next-Event Prediction<nep>
 
-Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in a sense that $e_(i+1)$ is *a* next step of $p$. However this definition fails to capture the semantics of concurrent or parallel systems, where multiple _correct_ linearisations and thus orderings are possible. 
+Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in a sense that $e_(i+1)$ is *a* next step of $p$. However this definition fails to capture the semantics of concurrent systems, where multiple _correct_ linearizations and thus orderings are possible. 
 
 We build upon the example from #link(<introduction>)[the Introduction]: 
 
@@ -142,7 +142,7 @@ and
 
 $ #[`Start`] -> #[`Produce`] B -> #[`Produce`] A -> #[`Combine`] A and B$
 
-can be deemed _correct_. Given the first trace is then later extracted from the system, the second one should still not be deemed incorrect - as we don't want to care about the order of causally unrelated events.
+can be deemed _correct_. Given the first trace is then later extracted from the system, the second one should still not be deemed incorrect - as we do not want to care about the order of causally unrelated events.
 Importantly though, 
 
 $ #[`Start`] -> #[`Combine`] A and B -> #[`Produce`] A -> #[`Produce`] B$
@@ -199,6 +199,8 @@ It provides three levels of Quality of Service (QoS), which can deal differently
 The Fischertechnik APS uses MQTT as its main channel of communication between the different production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
 
 Both cases result in duplicate messages from the broker, which need to be filtered out during data processing. The specific MQTT broker can also _retain_ messages of QoS 1, which redistributes the latest message from a topic to newly connected clients, even if that message was published before. These messages need filtering as well, as they can incorrectly influence the assumed state.
+
+We describe the exact _processing_ of the Fischertechnik MQTT messages and _conversion_ into tokens in @data-col-and-proc. 
 
 == Transformer<transformer>
 

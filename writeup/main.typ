@@ -5,6 +5,9 @@
 #let author = "Nicolas Christian Edelmann"
 #let date = datetime.today()
 
+#show smallcaps: set text(font: "libertinus serif")
+#show "Heraklit": smallcaps
+
 #show: thesis.with(
   title: "Heraklit X Fischertechnik Process Prediction using Transformers",
   author: author,

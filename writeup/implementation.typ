@@ -33,7 +33,7 @@ Next, we perform some *preliminary filtering*, essentially removing the messages
 
 The camera data could be interesting for future work, so we decided to still collect it, even though we will not make any use of them here.
 
-The next step contains the proper *preprocessing* of the trace data. Here, we analyse the messages themselves to *extract the tokens*, which represent the Heraklit steps modelled in @modelling. Note that these steps are assumed to already be implicitly composed with the control steps of @implicit-connect-steps.
+The next step consists of the proper *preprocessing* of the trace data. Here, we analyse the messages themselves to *extract the tokens*, which represent the Heraklit steps modelled in @modelling. Note that these extracted steps are assumed to already be implicitly composed with the control steps of @implicit-connect-steps.
 
 We can distinguish 3 different message types relevant to our modelling based on the MQTT topic:
 #pagebreak()
@@ -45,18 +45,23 @@ We can distinguish 3 different message types relevant to our modelling based on 
 - `fts/v1/ff/<SERIAL>`: This topic contains all messages related to the *AGV* with serial number `<SERIAL>`. It is again split into `/order`and `/state` messages, however for our modelling only the AGV _orders_ are relevant. 
 
 We start by creating a mapping of serial numbers to module types, to handle the different module actions.
-We can then usually extract the start of a new action and thus the `Start X` step from our model through the module *order messages*. For the result of an action, we need to listen to the *state messages*, until we need to find one that describes the status of the module as finished or failed to extract the next correct step.
+We can then usually extract the start of a new action and thus the `Start X` step from our model through the module *order messages*. For the result of an action, we need to listen to the *state messages*, until we need to find one that describes the status of the module as finished or failed to extract the next correct step. 
 
 Due to the QoS levels of MQTT and the retained messages of the APS MQTT broker, we need to apply some heuristics to filter out duplicate or old messages. This could have been partially avoided by also writing the MQTT `dup` flag of messages into the logs. However we would still need to figure out whether we received a message before or not regardless.
 
+Notably, a different modelling of our steps would change the MQTT processing in a significant way. This could be supporting duplicate messages in the modelling itself, changing the level of detail of each step or changing the step definitions themselves. If duplicate messages are supported in the steps, there is no need for duplicate filtering. With increased detail within a step or new step definitions, more metadata can be extracted from the MQTT messages themselves, such as the workpiece ID, intermediate processing states or the machine configuration.  With more details comes the need to be able to predict this detail of the next steps as well.
+
+Possibly, increased levels of detail would also require a different encoding of the tokens. Different encodings are discussed in @model-architecture.
+
 The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the message the time was sent from a module, the time it was received, the module serial number and message IDs.
 
+The 10 extracted tokenized traces consist of an average of 23,1 steps, with a minimum of 19 and a maximum of 31 steps. It consists of 4 traces of white workpieces, and 3 traces of red and blue workpieces each. For each color, it contains successful and failed runs.
+
 Lastly, we perform a random split of our tokenized traces into 7 training and 3 validation//#note[change to final numbers] 
- traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose") are not relevant, as all our executions in the APS are independent of one another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time.
+ traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose") are not relevant, as all our executions in the APS are independent of one another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time and extract the traces per workpiece.
 
-The two tokenized trace sets are then written to two files. We ensure, that from now on the model training process does not interact with the validation data.
+The two tokenized trace sets are then written to two files. We ensure that from now on the model training process does not interact with the validation data.
 
-#pagebreak()
 
 == Heraklit Prefix Checker
 
@@ -72,9 +77,14 @@ We limit our initial nodes to only contain unique labels, as otherwise all possi
 
 #line()
 
+#figure(caption: "Example Composition Graph")[
+#image("figures/tool-output/reference_graph.png")
+] <example-composition-graph>
+
 We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes. This tools code is additionally published on GitHub#footnote[#link("https://github.com/Niggelgame/heraklit-equiv-checker/") _last accessed 11.06.2026_] to allow using it for further Heraklit-based process prediction projects.
 
-The tool also contains a neat feature to display the composed run graphs of the two compared runs, leaving out the petri net places. This visualization can help to understand the composition and why predictions might be deemed incorrect.
+The tool also contains a neat feature to display the composed run graphs of the two compared runs, leaving out the petri net places. This visualization can help to understand the composition and why predictions might be deemed incorrect. A sample visualisation of a Fischertechnik APS can be seen in @example-composition-graph. It shows a run with a failed quality control. Note how steps that depend on multiple places have input edges coming from the steps that produced the corresponding place.
+
 
 Thus, given a reference run $r$, a prefix $p$ of it and a prediction $n$ made by our model, we check the correctness of this prediction by using this tool, asking whether $p bullet n$ is a prefix of $r$.
 
@@ -86,6 +96,14 @@ As tokens, we use the steps defined in @modelling, plus some additional tokens:
 
 - `<PAD>`, `<BOS>`, `<EOS>`: These meta-tokens are required for the training of the transformer. `<PAD>` is used to allows training on sequences shorter than our context window, padding the remaining window out. `<BOS>` and `<EOS>` mark the _begin_ and the _end_ of the sequence of tokens, letting the model stop its prediction when the process is over.
 - `<COLOR RED>`, `<COLOR WHITE>`, `<COLOR BLUE>`: These tokens are inserted at the beginning of a sequence to let the model know about what kind of workpiece is currently processed. This allows learning the different process configurations for different workpiece colors without creating much overhead.
+
+We choose to not encode the workpiece color directly into all tokens, as each step would need to be encoded for all colors, tripling the number of tokens. Most tokens would then need to learn a very similar behaviour within the model for each color. Only at the points of differently defined process behaviour, these tokens would need to show different model behaviour. By only encoding the color at the beginning of the sequence, we leverage the attention mechanism of the transformer to learn to refer to the color token when needed. For other tokens, the behaviour is simply _shared_ for all colors, without the need to refer to the color token. 
+
+Additionally, by _sharing_ the token between colors, cross-color learning is possible. Due to our limited dataset, this is especially helpful, as the model can infer the shared behaviour from all training runs. With separate tokens for each color, the model would not necessarily learn the shared behaviour, but could treat each color separately, thus requiring more training data to learn the same behaviour.
+
+Instead of having a one-to-one encoding of steps to tokens, we could have used a multi-token encoding for each step. Especially with increased detail in the steps, as discussed in @data-col-and-proc, this could be a reasonable approach to avoid token count explosion, especially with larger classes of step parameters. With multi-token encodings, we would however need to ensure that the model not only learns to predict the next event, but also the correct sequence of tokens for a single step to later be able to decode the parameters of a step into a single configured step. To reduce complexity, we decide to not use a multi-token encoding for our steps.
+
+We use an embedding layer to encode the one-hot encoded tokens into a denser vector representation, see @transformer. While reducing the dimensionality of the input and thus the complexity of the model, it also allows the model to learn relationships between tokens, by encoding similar tokens into similar vector represenations.
 
 The hyperparameters of our model architecture are chosen using cross-validation on k-folds of the training data, as discussed in @transformer. We try to provide reasonable values for each hyperparameter, then iterate all combinations of these hyperparameters and choose the best model on the basis of a loss function. 
 
