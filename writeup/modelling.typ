@@ -113,7 +113,7 @@ Additionally, this is the first module to perform a certain module-specific acti
 
 Both of these properties can be re-discovered in the following module-specific step-definitions.
 
-While there is a parameter for the drilling duration defined for each workpiece color, we decide to not model it due to two reasons. First, the parameter is constant and thus just belongs directly to the drilling operation of that color. Second, even assuming it was not constant, there is no causal relationship to be learned as to why the duration should be different. The Fischertechnik APS provides no simulated tool wear or different operation durations for simulated broken or working workpieces.
+While there is a parameter for the drilling duration defined for each workpiece color, we decide to not model it for two reasons. First, the parameter is constant and thus just belongs directly to the drilling operation of that color. Second, even assuming it was not constant, there is no causal relationship to be learned as to why the duration should be different. The Fischertechnik APS provides no simulated tool wear or different operation durations for simulated broken or working workpieces.
 
 We again provide a successful run in @drill-drill-run and a failed run in @drill-drill-run-failure, composed of:
 

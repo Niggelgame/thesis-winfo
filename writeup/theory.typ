@@ -194,7 +194,7 @@ It provides three levels of Quality of Service (QoS), which can deal differently
 
 1. QoS 0: At most once. The message is sent to all subscribers only once. It is not stored on the broker, and if delivery was not successful, no redistribution is planned. It is also known as _"fire and forget"_.
 2. QoS 1: At least once. The message is repeatedly sent to all subscribers that have not acknowledged the message yet, marking every message from the second send on using the `DUP` flag. The message is stored at the broker until all subscribers have received the message.
-3. QoS 2: Exactly once. Similarly to QoS 1 the broker stores the message and resends it. However, the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
+3. QoS 2: Exactly once. Similarly to QoS 1, the broker stores the message and resends it. However, the clients will need to also store the message until it gets released via a special message to ensure no double handling takes place.
 
 The Fischertechnik APS uses MQTT as its main channel of communication between the different production modules. While most state updates are distributed via QoS 1, some specific order requests are executed using QoS 2. 
 
@@ -210,7 +210,7 @@ While using Long Short-Term-Memory models (LSTMs), a special version of recurrin
 
 === Transformer Architecture
 
-First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250.000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
+First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250,000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
 
 The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: The `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used an `Decoder`-only architecture @gpt-1 @gpt-2, as it is focused on next token generation only. 
 
@@ -258,9 +258,18 @@ Using cross validation on k-fold splits of the training data, we search through 
 
 Some approaches to apply the transformer architecture rely on natural language to express the processes steps @llm-proc-pred. However, this approach requires the model not only learning things about the process, but also understanding the language.
 
-Our approach to use the transformer architecture therefore relies on training a _smaller_#footnote[Compared by the number of learnable parameters to a typical LLM] model following the original transformer architecture from scratch. 
+Our approach to use the transformer architecture therefore relies on training a _smaller_#footnote[Compared to a typical natural language model by the number of learnable parameters] model following the original transformer architecture from scratch. 
 
-The architecture requires us to encode our Heraklit steps into _tokens_. We chose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one can simply encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. The output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution.
+The transformer architecture matches the requirements of our process prediction problem on multiple levels. From a general perspective, it is designed to process and output sequences of elements, just as in process prediction past events are considered to predict future events. 
+The initial embedding of events from tokens to lower-dimensional vectors allows the model to learn a more compact representation of events, instead of relying on a one-hot encoding of tokens. This allows to keep the model size small even with a large number of different events, by embedding similar events into similar vectors.
+
+The characterizing attention mechanism allows the model to learn causal relationships between elements in the sequence. For the next event, relevant previous elements can be attended to, while irrelevant elements are ignored. This is especially important when modelling sequences that are only partially ordered, as in the case of concurrent systems. 
+
+Lastly, the transformer architecture is highly scalable, from a small model with only a few layers and attention heads to represent a small process without parameters and few causal relationships, up to models with billions of parameters to represent highly complex processes on huge datasets. Even though we are using our technique on an experimental scale, the scalability allows the model architecture to be applied to a wider range of process prediction problems.
+
+For the Fischertechnik APS, we are required us to encode our Heraklit steps into _tokens_. We choose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one can could encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. 
+
+The output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution.
 
 Further details on Fischertechnik APS specifics and the training of our model are discussed in @implementation.
 

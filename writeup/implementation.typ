@@ -53,7 +53,7 @@ Notably, a different modeling of our steps would change the MQTT processing in a
 
 Possibly, increased levels of detail would also require a different encoding of the tokens. Different encodings are discussed in @model-architecture.
 
-The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the message the time was sent from a module, the time it was received, the module serial number and message IDs.
+The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the time the message was sent from a module, the time it was received, the module serial number and message IDs.
 
 The 10 extracted tokenized traces consist of an average of 23.1 steps, with a minimum of 19 and a maximum of 31 steps. It consists of 4 traces of white workpieces, and 3 traces of red and blue workpieces each. For each color, it contains successful and failed runs.
 
