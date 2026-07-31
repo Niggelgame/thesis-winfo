@@ -17,7 +17,7 @@
     faculty: "Human and Business Sciences",
     field: "Business Informatics",
     type: "Bachelor Thesis",
-    city: "Saarbrücken",
+    city: "St. Ingbert",
     author: author,
     date: date,
     advisor: "Prof. Dr. Peter Fettke",

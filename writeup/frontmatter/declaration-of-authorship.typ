@@ -6,7 +6,7 @@
   grid(
     columns: (auto, auto),
     align(left)[
-      #city, #date.display("[day]. [month repr:long], [year]")
+      #city, 31. Juli 2026
       #h(12pt)
     ],
     align(right)[
@@ -27,8 +27,24 @@
     footer: [],
     [
       == Eidesstattliche Erklärung
-      Hiermit versichere ich an Eides statt, dass ich diese Arbeit selbständig angefertigt und keine anderen als die angegebenen Hilfsmittel verwendet habe. Alle wörtlichen oder sinngemäßen Entlehnungen sind deutlich als Solche gekennzeichnet.
+      Ich erkläre an Eides statt, dass ich die vorliegende Arbeit selbstständig und ohne die Beteiligung
+      Dritter verfasst habe und keine anderen Quellen und Hilfsmittel als die angegebenen benutzt habe.
+      Alle Stellen der Arbeit, die wörtlich oder sinngemäß aus Veröffentlichungen oder anderweitigen
+      fremden Äußerungen entnommen wurden, sind als solche kenntlich gemacht. Ich versichere des
+      Weiteren, dass die elektronische Version mit der gedruckten Version übereinstimmt.
 
+      Insbesondere bestätige ich hiermit, dass ich alle mittels künstlicher Intelligenz betriebenen Software
+      (z. B. ChatGPT) generierten und/oder bearbeiteten Teile der Arbeit unter Angabe des Prompts, des
+      verwendeten Modells, des Datums und der Zeit der Interaktion kenntlich gemacht und als Hilfsmittel
+      angegeben habe. Ich erkläre mich damit einverstanden, dass die Arbeit mit einer Plagiatssoftware
+      überprüft wird.
+      
+      Mir ist bewusst, dass der Verstoß gegen diese Versicherung zum Nichtbestehen der Prüfung bis hin
+      zum Verlust des Prüfungsanspruchs führen kann.
+
+      Ich habe ausschließlich die folgenden Hilfsmittel benutzt:
+
+      - GitHub Copilot Inline Suggestions: Integriert in Visual Studio Code, verwendet es künstliche Intelligenz, um Autovervollständigung und Code-Vorschläge während der Implementierung zu erstellen.
 
       #v(100pt)
       #signature(city: city, date: date, name: name)
