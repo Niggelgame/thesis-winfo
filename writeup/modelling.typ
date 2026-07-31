@@ -175,9 +175,7 @@ Technically, this restriction is applied by creating a global shared place calle
 
 This new design does not directly solve the issue of these control steps missing in the logs, but provides a simple solution. By composing $"DRILL Dropped" bullet "Implicit DRILL end"$ and $"Implicit MILL start" bullet "MILL Pick"$ we create a run module that essentially just changes the interfaces of the module steps to have the `Next Module Ready` place instead of their respective `Start` and `Finish` places. These newly composed models can be then again composed directly via the `Next Module Ready`. 
 
-As we know that before and after all module actions their steps will need their corresponding `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs.
-
-For example, if the logs contain the steps
+As we know that before and after all module actions their steps will need their corresponding `Implicit` step, we can pre-compose the control and module steps when talking about the actual logs. For example, if the logs contain the steps
 
 `DRILL Dropped` #h(112pt) $arrow$ #h(118pt) `MILL Pick`
 

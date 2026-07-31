@@ -78,6 +78,8 @@ For the first scenario the accuracy remains mostly stable, dropping slightly ove
 The performance drop in the second scenario, inserting random events being possible at all positions, worsens the accuracy much more significantly, down to only \~*43.4%* with $p = 0.5$. The progression over increasing $p$ is plotted in @p-progression on the right.
 
 
+This suggests that the model highly depends on the last prefix event being correct to predict the next event. 
+
 #figure(caption: [Progression of accuracy over increasing insertion rate $p$], placement: none)[
 
   #let results_no_last = (
@@ -138,7 +140,6 @@ The performance drop in the second scenario, inserting random events being possi
   #v(10pt)
 ]<p-progression>
 
-This suggests that the model highly depends on the last prefix event being correct to predict the next event. 
 
 === Dropping Random Events
 
