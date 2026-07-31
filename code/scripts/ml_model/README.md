@@ -22,7 +22,7 @@ uv run main.py train --data-preproc ../../data/model/preprocessed_tokens.json --
 
 the model will be trained. Certain hyperparameters will first be chosen using cross-validation (the model dimensions, layers, dropouts and learning rates). Then a training run on the data happens. 
 
-For the final validation, the data should be split into training and validation before training the models:
+**For the final validation, the data should be split into training and validation before training the models:**
 
 ```shell
 uv run random_split_preprocessed.py ../../data/model/preprocessed_tokens.json ../../data/model/train_tokens.json ../../data/model/val_tokens.json

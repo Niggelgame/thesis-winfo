@@ -1,3 +1,5 @@
+### Scenario 2: Predict the top-x next tokens and check if the correct token is among them.
+
 import json
 import random
 

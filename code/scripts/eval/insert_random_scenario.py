@@ -1,3 +1,5 @@
+### Scenario 3: Insert random tokens into the trace and check if the model can still predict the correct next token.
+
 import json
 import random
 import math

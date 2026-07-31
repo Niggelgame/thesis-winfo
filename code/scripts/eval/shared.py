@@ -1,3 +1,5 @@
+### This file contains code that is shared between the evaluation scripts.
+
 import os
 import sys
 import random
@@ -154,6 +156,3 @@ def check_correct_prefix(full_trace, sub_trace):
     here_path = os.path.abspath(os.path.dirname(__file__))
     step_def_path = Path(here_path).parent / "heraklit_equiv_checker" / "tests" / "step_defs" / "fischertechnik_steps.json"
     return check_equivalence_step_file(full_trace, sub_trace, step_def_path.absolute(), enable_warnings=False)
-
-
-# TODO: Graph / Table generation code 

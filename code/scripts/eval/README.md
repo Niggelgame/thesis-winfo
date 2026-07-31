@@ -1,6 +1,6 @@
 # Evaluation
 
-Evaluation consists of multiple evaluated scenarios. 
+Evaluation consists of multiple evaluated scenarios. Most evaluation scripts have more options than displayed here. For more information, run the script with the `--help` option. For simplicity, we focus on reproducing the evaluation results from the thesis in this README.
 
 ## Simple scenario
 
@@ -15,6 +15,11 @@ To create the baseline with random steps, run
 uv run simple_scenario.py --random
 ```
 
+To create the baseline with occurence-based random steps, run 
+```shell
+uv run simple_scenario.py --occurency
+```
+
 ## Top X scenario
 
 Run the general top X scenario predicting and checking x next token options using
@@ -27,6 +32,12 @@ Again, to use the random baseline, use
 
 ```shell
 uv run topx_scenario.py --random
+```
+
+and to use the occurence-based random baseline, use
+
+```shell
+uv run topx_scenario.py --occurency
 ```
 
 To change the number of top n options to check, provide the additional `--top-x` parameter.
@@ -59,7 +70,7 @@ uv run random_dropped_scenario.py
 
 ## Long Unseen Trace
 
-First, in `data-collection`, run 
+First, in the `data-collection` directory, run 
 
 ```shell
 uv run collect_set.py ../../data/eval/long_trace/original --output ../../data/eval/long_trace/collected.proc.json
@@ -71,7 +82,7 @@ Then filter:
 uv run prefilter.py ../../data/eval/long_trace/collected.proc.json --output ../../data/eval/long_trace/collected-filtered.proc.json
 ```
 
-Next, from `ml_model`, run preprocessing:
+Next, from the `ml_model` directory, run preprocessing:
 
 ```shell
 uv run main.py preprocess --data ../../data/eval/long_trace/collected-filtered.proc.json --out-json ../../data/eval/long_trace/preprocessed_tokens.json
@@ -95,3 +106,5 @@ Timing measurements are extracted on the simple scenario
 ```shell
 uv run simple_scenario.py --time
 ```
+
+Resource usage can be measured using the macOS Activity Monitor.

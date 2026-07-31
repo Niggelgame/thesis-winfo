@@ -16,6 +16,8 @@ This will download the writeup source, a subset of the reading material and the 
 
 The writeup (*the* thesis document) is contained in the [writeup directory](writeup/README.md).
 
+The writeup generated from the current writeup code is also available as a PDF in the CI artifacts of the repository.
+
 ## Project code
 
 The project code and documentation (especially technical details dropped from the writeup) are contained in the [code directory](code/README.md).
