@@ -200,7 +200,7 @@ Thus, the accuracy, while seeming low, matches the expectations due to the limit
 
 == Model Performance
 
-Predictive process monitoring is mostly done for ongoing processes, and possibly in an completely online setting, predicting on data just as it arrives at the system. Both the _resource requirements_ and the _amount of time_ required for singular predictions are relevant factors to consider when discussing online deployment. 
+Predictive process monitoring is mostly done for ongoing processes @ppm26, and possible in an completely online setting, predicting on data just as it arrives at the system. Latter scenario is especially relevant, if immediate feedback for ongoing processes or future processes is required.  Both the _resource requirements_ and the _amount of time_ required for singular predictions are important factors to consider when discussing online deployment. 
 
 Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_//#note[final number!] 
 floating-point parameters, thus VRAM with a fully loaded model usage is limited as well.

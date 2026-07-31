@@ -254,7 +254,7 @@ Besides the model parameters from above, we need to also select parameters for t
 Using cross validation on k-fold splits of the training data, we search through a subset of hyperparameters. These hyperparameters are based on the model defaults and changed according to the training data size we provide.
 
 
-=== Technical requirements for Process Prediction
+=== Technical requirements for Process Prediction<transformer-tech-req>
 
 Some approaches to apply the transformer architecture rely on natural language to express the process steps @llm-proc-pred. However, this approach requires the model not only learning things about the process, but also understanding the language.
 
@@ -265,11 +265,20 @@ The initial embedding of events from tokens to lower-dimensional vectors allows 
 
 The characterizing attention mechanism allows the model to learn causal relationships between elements in the sequence. For the next event, relevant previous elements can be attended to, while irrelevant elements are ignored. This is especially important when modelling sequences that are only partially ordered, as in the case of concurrent systems. 
 
-Lastly, the transformer architecture is highly scalable, from a small model with only a few layers and attention heads to represent a small process without parameters and few causal relationships, up to models with billions of parameters to represent highly complex processes on huge datasets. Even though we are using our technique on an experimental scale, the scalability allows the model architecture to be applied to a wider range of process prediction problems.
+Additionally, the transformer architecture is highly scalable, from a small model with only a few layers and attention heads to represent a small process without parameters and few causal relationships, up to models with billions of parameters to represent highly complex processes on huge datasets. Even though we are using our technique on an experimental scale, the scalability allows the model architecture to be applied to a wider range of process prediction problems.
 
-For the Fischertechnik APS, we are required to encode our Heraklit steps into _tokens_. We choose to make every possible step its own token, as our case study does not require taking in parameters for steps. In case of parameters, one could encode them as a sequence of tokens, or by creating multi-dimensional input- and output vectors that are parsed as parameters. 
+Finally, the output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution. The probabilities can also be used to express a confidence measure of the prediction, or to provide multiple possible next steps in case of non-deterministic processes.
 
-The output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution.
+For our Fischertechnik APS, we are need to provide our encoding of the Heraklit steps into _tokens_. We choose to make *every possible step its own token*, as our case study does not require taking in parameters for steps. 
+
+In case parameters are necessary, we considered two approaches. Parameters can be encoded into a sequence of tokens, creating special meta-tokens to describe the start and end of parameter sequences. The sequence of tokens to encode our starting example of start of the production of a product `A` with quantity `3` could be encoded as the input sequence [`Produce`, `ParamStart`, `A`, `3`, `ParamEnd`]. The model would then need to learn the semantics of the parameter sequence, which could be difficult for larger parameter sets, also ensuring a complete parameterization and correct order of parameters depending on the step. Formally, a step `S` with parameters $p_1, ..., p_n$ is then represented as a sequence of tokens [`S`, `ParamStart`, $p_1$, ..., $p_n$, `ParamEnd`], where the order of parameters is fixed based on the step.
+
+Alternatively, parameters can be represented by creating multi-dimensional input- and output tokens that are parsed as parameters. Latter approach could be implemented by multiple parallel inputs, where each parameter type sits at a fixed input position, which is zero-padded if not used for a specific action. Here, the upper example could be represented by a tuple of the form (`Produce`, `A`, `3`), where the first element is the action and the following elements are the parameters. 
+
+This approach only works a small number of different parameters over different steps, as we need to be able to represent all possible parameters of all possible steps in the same vector space. For example, if `Produce` has two distinct parameter types, one for the item and one for the item parameter, and `Combine` has two distinct parameter types, our complete input to our model would always need to be a tuple of the form (`Step`, `ProduceItem`, `ProduceQuantity`, `CombineParam1`, `CombineParam2`) independent of the specific step, where the last two elements are zero-padded for all steps that are not `Combine`. 
+
+Formally, given the set of all steps $S = {s_1, s_2, ..., s_m}$ and parameters $p_(i, 1), ..., p_(i, k_i)$ for each step $s_i in S$, the final input vector would be of the form $(s_i, p_(1, 1), ..., p_(1, k_1), ..., p_(m, 1), ...,p_(m, k_m))$. For an individual step $s_i$, the input vector would be $(s_i, 0, ..., 0, p_(i, 1), ..., p_(i, k_i), 0, ..., 0)$. By sharing parameter positions across multiple steps, the dimensionality of the input vector can be reduced, however without enough parameter sharing, the sparsity of the input vector increases with the number of different steps and parameters. This approach is therefore not feasible for a large number of different steps with different parameter types, as the input vector would grow in size and sparsity.
+
 
 Further details on Fischertechnik APS specifics and the training of our model are discussed in @implementation.
 

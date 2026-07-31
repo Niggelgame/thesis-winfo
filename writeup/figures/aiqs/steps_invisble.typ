@@ -74,7 +74,7 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *AIQS invisble finish*]
+      text(size: 11pt)[step *AIQS invisible finish*]
     )
 
     content((6, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Finish \ AIQS \ Drop])
@@ -97,7 +97,7 @@
   })
 ]]
 
-#figure(caption: "AIQS Invisble steps")[
+#figure(caption: "AIQS Invisible steps")[
 
 #grid(
   columns: (1fr, 1fr),
