@@ -11,9 +11,9 @@ For our implementation we rely on several tools:
 
 - `python`#footnote[#link("https://www.python.org") _last accessed: 11.06.2026_]: The programming language used for the code infrastructure and scripts.
 - `uv`#footnote[#link("https://docs.astral.sh/uv/") _last accessed: 11.06.2026_]: A Python project and package manager handling the other listed dependencies and tools.
-- `pytorch`#footnote[#link("https://docs.pytorch.org/docs/2.12/index.html") _last accessed: 11.06.2026_]: An optimized python library for deep learning. It supports training on CPUs and GPUs, including integrated GPUs such as ones used in Apple Silicon processors. We use it to build our models by using integrated base models or layers, and to perform the training.
-- `numpy`#footnote[#link("https://numpy.org") _last accessed: 11.06.2026_]: An optimized python library for array programming, such as tensors. This is also implicitly used by `pytorch`, and we use it to interact with data to and from `pytorch`.
-- `graphviz`#footnote[#link("https://graphviz.readthedocs.io/en/stable/") _last accessed: 11.06.2026_]: A library for a graph drawing software for python. We use it to visualize Heraklit runs.
+- `pytorch`#footnote[#link("https://docs.pytorch.org/docs/2.12/index.html") _last accessed: 11.06.2026_]: An optimized Python library for deep learning. It supports training on CPUs and GPUs, including integrated GPUs such as ones used in Apple Silicon processors. We use it to build our models by using integrated base models or layers, and to perform the training.
+- `numpy`#footnote[#link("https://numpy.org") _last accessed: 11.06.2026_]: An optimized Python library for array programming, such as tensors. This is also implicitly used by `pytorch`, and we use it to interact with data to and from `pytorch`.
+- `graphviz`#footnote[#link("https://graphviz.readthedocs.io/en/stable/") _last accessed: 11.06.2026_]: A library for a graph drawing software for Python. We use it to visualize Heraklit runs.
 
 The implementation was tested on both _macOS 15.7_ and _Ubuntu Linux 24.04_. The hardware used for training and evaluation consists of an _Apple MacBook Pro_ with an _M1 Pro_ chip and _32GB_ of memory.
 
@@ -31,7 +31,7 @@ Before any further processing, all JSON log files are read, checked for valid JS
 
 Next, we perform some *preliminary filtering*, essentially removing the messages regarding two topics: The first one contains the raw image data of the camera mounted on the APS, wasting space in the logs. The second one removes a single action that makes sure a status LED is blinking. This removes 5298 and 1996 messages respectively, reducing the dataset size to only around 14MB. 
 
-The camera data could be interesting for future work, so we decided to still collect it, even though we will not make any use of them here.
+The camera data could be interesting for future work, so we decided to still collect it, even though we will not make any use of it here.
 
 The next step consists of the proper *preprocessing* of the trace data. Here, we analyze the messages themselves to *extract the tokens*, which represent the Heraklit steps modeled in @modelling. Note that these extracted steps are assumed to already be implicitly composed with the control steps of @implicit-connect-steps.
 
@@ -42,12 +42,12 @@ We can distinguish 3 different message types relevant to our modeling based on t
 
 - `module/v1/ff/<SERIAL>/state`: This topic contains messages from the module with the serial number `<SERIAL>` to the CCU. These *state messages* are regularly transmitted and contain the state of an action in the module. 
 
-- `fts/v1/ff/<SERIAL>`: This topic contains all messages related to the *AGV* with serial number `<SERIAL>`. It is again split into `/order`and `/state` messages, however, for our modeling only the AGV _orders_ are relevant. 
+- `fts/v1/ff/<SERIAL>`: This topic contains all messages related to the *AGV* with serial number `<SERIAL>`. It is again split into `/order` and `/state` messages, however, for our modeling only the AGV _orders_ are relevant. 
 
 We start by creating a mapping of serial numbers to module types, to handle the different module actions.
 We can then usually extract the start of a new action and thus the `Start X` step from our model through the module *order messages*. For the result of an action, we need to listen to the *state messages* until we need to find one that describes the status of the module as finished or failed to extract the next correct step. 
 
-Due to the QoS levels of MQTT and the retained messages of the APS MQTT broker, we need to apply some heuristics to filter out duplicate or old messages. This could have been partially avoided by also writing the MQTT `dup` flag of messages into the logs. However we would still need to figure out whether we received a message before or not regardless.
+Due to the QoS levels of MQTT and the retained messages of the APS MQTT broker, we need to apply some heuristics to filter out duplicate or old messages. This could have been partially avoided by also writing the MQTT `dup` flag of messages into the logs. However, we would still need to figure out whether we received a message before or not regardless.
 
 Notably, a different modeling of our steps would change the MQTT processing in a significant way. This could be supporting duplicate messages in the modeling itself, changing the level of detail of each step or changing the step definitions themselves. If duplicate messages are supported in the steps, there is no need for duplicate filtering. With increased detail within a step or new step definitions, more metadata can be extracted from the MQTT messages themselves, such as the workpiece ID, intermediate processing states or the machine configuration.  With more details comes the need to be able to predict this detail of the next steps as well.
 
@@ -55,7 +55,7 @@ Possibly, increased levels of detail would also require a different encoding of 
 
 The then *extracted tokens* are written to a new processed JSON file. We additionally add some metadata to the tokens for analysis purposes, such as the time the message was sent from a module, the time it was received, the module serial number and message IDs.
 
-The 10 extracted tokenized traces consist of an average of 23.1 steps, with a minimum of 19 and a maximum of 31 steps. It consists of 4 traces of white workpieces, and 3 traces of red and blue workpieces each. For each color, it contains successful and failed runs. Two of the traces are duplicates of other traces, even though their MQTT logs are different. This is because their extracted relevant steps are in the same order, even though other messages might be in different orders or different in their metadata. While duplicates would usually be removed, we treat our traces as separate due to differences in their raw MQTT data.
+The 10 extracted tokenized traces consist of an average of 23.1 steps, with a minimum of 19 and a maximum of 31 steps. They consist of 4 traces of white workpieces, and 3 traces of red and blue workpieces each. For each color, it contains successful and failed runs. Two of the traces are duplicates of other traces, even though their MQTT logs are different. This is because their extracted relevant steps are in the same order, even though other messages might be in different orders or different in their metadata. While duplicates would usually be removed, we treat our traces as separate due to differences in their raw MQTT data.
 
 Lastly, we perform a random split of our tokenized traces into 7 training and 3 validation//#note[change to final numbers] 
  traces. Concerns regarding dependent traces within training and validation datasets as presented by #cite(<generalisation>, form: "prose") are not relevant, as all our executions in the APS are independent of one another. This would change if we run multiple APSs in parallel or have multiple workpieces processed at the same time and extract the traces per workpiece.
@@ -81,7 +81,7 @@ We limit our initial nodes to only contain unique labels, as otherwise all possi
 #image("figures/tool-output/reference_graph.png")
 ] <example-composition-graph>
 
-We built a tool and python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes. This tool's code is additionally published on GitHub#footnote[#link("https://github.com/Niggelgame/heraklit-equiv-checker/") _last accessed 11.06.2026_] to allow using it for further Heraklit-based process prediction projects.
+We built a tool and Python library around this concept, which processes two sequences of predefined steps and checks, whether one is the prefix of the other. To ensure the correctness of the tool, an extensive test suite is created and passes. This tool's code is additionally published on GitHub#footnote[#link("https://github.com/Niggelgame/heraklit-equiv-checker/") _last accessed 11.06.2026_] to allow using it for further Heraklit-based process prediction projects.
 
 The tool also contains a neat feature to display the composed run graphs of the two compared runs, leaving out the Petri net places. This visualization can help to understand the composition and why predictions might be deemed incorrect. A sample visualization of a Fischertechnik APS can be seen in @example-composition-graph. It shows a run with a failed quality control. Note how steps that depend on multiple places have input edges coming from the steps that produced the corresponding place.
 
@@ -115,11 +115,11 @@ Further training details are discussed in the following section.
 
 The model is generally trained in a set number of _epochs_. In each epoch, the training data is provided to the model to compute the _loss_, a metric describing a _distance_ of the prediction to the correct results. The lower the loss, the better. 
 
-We use a *cross-entropy loss* function that always sets the loss to 0 for a position if the next token is a padding token. The cross-entropy loss creates strong gradients for the optimizer by relying on a negative logarithm of the probability assigned, if the prediction is incorrect, which results in exponential penalty and thus high loss for incorrect predictions. 
+We use a *cross-entropy loss* function that always sets the loss to 0 for a position if the next token is a padding token. The cross-entropy loss creates strong gradients for the optimizer by relying on a negative logarithm of the probability assigned, if the prediction is incorrect, which results in an exponential penalty and thus high loss for incorrect predictions. 
 
-After computing the loss, we perform a `pytorch` backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our model, hopefully lowering the loss.
+After computing the loss, we perform a PyTorch backward computation. This computes a loss differential for each learnable parameter, thus specifying how much the loss would change in which direction if the parameter is changed in a certain direction. This differential is then provided to the AdamW optimizer @adamw-optimizer, which computes the next set of parameters for our model, hopefully lowering the loss.
 
-During training of our model, we add a small _dropout_ layer into our model after the positional embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly based on a probability defined as $d_("drop")$. This layer tries to regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behavior has been validated in previous work also related to process prediction @proc-pred-dl. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` pytorch feature on the model.
+During training of our model, we add a small _dropout_ layer into our model after the positional embedding of our tokens. _Dropout_, as the name suggests, drops parts of the tensor it computes on. These parts are always selected randomly based on a probability defined as $d_("drop")$. This layer tries to regularize our model to not overfit certain parts of our embedding, as the model must rely on multiple different parts of the input. This behavior has been validated in previous work also related to process prediction @proc-pred-dl. Crucially, the dropout layer is disabled during evaluation of the final model by using the `.eval()` PyTorch feature on the model.
 
 This process is repeated for a fixed set of epochs, until a certain loss is reached or until not enough loss progress is achieved.
 
@@ -127,7 +127,7 @@ This process is repeated for a fixed set of epochs, until a certain loss is reac
 
 Before training the actual model, we need to select its hyperparameters. 
 
-The values for the different hyperparameters we search though are:
+The values for the different hyperparameters we search through are:
 
 ```python
 d_models = [16, 32]
@@ -138,7 +138,7 @@ learning_rates = [3e-3, 1e-3]
 
 On each possible combinatorial set of parameters, we perform a *k-fold cross-validation*. This is a standard technique to avoid overfitting while just using training data. The data set is split into $k$ equally sized groups of data, the so-called _folds_, then we train the model $k$ times, always using $k-1$ folds for training, and one for validation. This technique is especially relevant for the small dataset we have, as we cannot be sure that a single random split properly distributes the data into fair training and validation sets. We chose `k = 4`.
 
-During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model, that has found good parameters early on, or such a bad model configuration, that training it further probably does not produce much of an impact either. 
+During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model that has found good parameters early on, or such a bad model configuration, that training it further probably does not produce much of an impact either. 
 
 During cross-validation we also measure the performance of the combination of most probable 3 output tokens, producing higher `top_k` performance if any one of these top 3 tokens are correct. 
 

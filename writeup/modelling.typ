@@ -41,7 +41,7 @@ domain
 process-module: {DPS, HBW, DRILL, MILL, AIQS}
 ```
 
-Important to notice is that depending on which *AGV move* step is taken, only certain step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at M1` place, with `M1`$in M$.
+It is important to notice that depending on which *AGV move* step is taken, only certain step modules depending on the AGV position can be composed afterwards. This however also ensures that modules can depend on the AGV being at their module, locking them at that position by temporarily consuming the token at the `AGV at M1` place, with `M1`$in M$.
 
 == Picking and Dropping
 
@@ -62,11 +62,11 @@ Next we will look at the individual process module actions.
 
 == HBW
 
-The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage and of dropping workpieces from storage onto the AGV. 
+The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage and dropping workpieces from storage onto the AGV. 
 
 These might seem like actions that require a lot of control, first due to needing to select what workpiece should be extracted from storage, and second due to storage management itself.
 
-However, the Fischertechnik simplified both control challenges by 
+However, the Fischertechnik APS simplified both control challenges by 
 
 1. only looking at the current running order that the pick or drop action is associated with, figuring out what color it refers to and then 
 2. performing a _First-In First-Out_ (FIFO) storage policy for all colors, keeping the mapping of colors to ordered storage slots persistent.
@@ -91,7 +91,7 @@ These runs are exemplary for all module `Pick` and `Drop` runs, as they always f
 
 The DPS is responsible for the insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory is represented by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
 
-Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose not to model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
+Both actions are reading from and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose not to model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
 
 Notably, the `DPS Drop` step is the only step that can introduce a new workpiece into the factory. New workpieces are generally first stored into the HBW and then extracted again with an order, even if an order for that piece is already present. 
 
@@ -144,7 +144,7 @@ Besides the `Pick` and `Drop` steps, the AIQS needs to perform this quality chec
 
 #include "figures/aiqs/steps_check_quality.typ"
 
-In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds upon which to base its decision. 
+In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece currently "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds upon which to base its decision. 
 
 We will later see that this results in missed accuracy of our prediction model.
 
@@ -189,7 +189,7 @@ as the implicit steps can be directly inferred.
 
 At this point, one might wonder why we have not directly put the `Next Module Ready` step into the module steps. The reason for this decision is that we can keep the level of detail on the module basis, while essentially just having an interface wrapper to simplify implementation details later.
 
-All the implicit control steps, that are implicitly composed with the respective `Start` and `Finish` steps of the processing modules can be found in @implicit-connect-steps. Notably, the DRILL, MILL and AIQS only connect a start module on the `Pick` action and a stop module on the `Drop` action. The DPS and HBW however can independently Pick and Drop without any ongoing action in between, so both `Pick` and `Drop` actions have their own implicit start and stop control.
+All the implicit control steps that are implicitly composed with the respective `Start` and `Finish` steps of the processing modules can be found in @implicit-connect-steps. Notably, the DRILL, MILL and AIQS only connect a start module on the `Pick` action and a stop module on the `Drop` action. The DPS and HBW however can independently Pick and Drop without any ongoing action in between, so both `Pick` and `Drop` actions have their own implicit start and stop control.
 
 For the further processing we then also redefine the following step modules as runs composed with their implicit control step:
 

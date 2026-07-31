@@ -17,7 +17,7 @@ We will not provide an in-depth explanation of Heraklit, but will focus on an ov
 - *Dynamics*: Actions are performed using local state, and dynamics between actions using causal relationships.
 - *Statics*: Items, data and operations on them are treated as first-class citizens.
 
-The _composition calculus_ of _modules_ and causal modeling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read upon in @heraklit.
+The _composition calculus_ of _modules_ and causal modeling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read up on in @heraklit.
 
 Heraklit modules are conceptually modeled using graphs, with inner vertices and outer vertices. These outer vertices contribute to the _interface_ of a module and are the external connection points of a module.
 
@@ -42,7 +42,7 @@ Heraklit modules are conceptually modeled using graphs, with inner vertices and 
 ]
 
 
-The module composition requires composition of graphs along the interfaces. Intuitively, graph composition of two graphs ensures that all graph nodes still exist in the composed graph, just _merging_ the nodes at the interface. The new graph thus contains all nodes of both graphs not included in the interface, the free nodes of both interfaces and once the nodes in the interface. One then just needs to reconstruct the edges as before. 
+The module composition requires composition of graphs along the interfaces. Intuitively, graph composition of two graphs ensures that all graph nodes still exist in the composed graph, just _merging_ the nodes at the interface. The new graph thus contains all nodes of both graphs not included in the interface, the free nodes of both interfaces and a single copy of the nodes in the interface. One then just needs to reconstruct the edges as before. 
 
 #definition("Graph Composition")[
   Let $M$ and $N$ be two graphs, let $A subset.eq M$ and $B subset.eq N$ be interfaces. Then the _composition of $M$ and $N$ along $A$ and $B$_ is the graph G where:
@@ -54,7 +54,7 @@ The module composition requires composition of graphs along the interfaces. Intu
   2. For each edge $(x, y)$ of $M$ or $N$,
     - if $x$ and $y$ are both match free, then $(x,y)$ is an edge of $G$;
     - if $x$ is match free and ${y, y'}$ is a match, then $(x, {y, y'})$ is an edge of $G$;
-    - if ${x, x'}$ is a match and $y$ is match free, then $({x, x'}, y)$ is an edge of $G$;
+    - if ${x, x'}$ is a match and $y$ is match-free, then $({x, x'}, y)$ is an edge of $G$;
     - if ${x, x'}$ and ${y, y'}$ are matches, then $({x, x'}, {y, y'})$ is an edge of $G$.
 ]
 
@@ -130,7 +130,7 @@ In this work, we will focus on predicting the next event of a process.
 
 === Next-Event Prediction<nep>
 
-Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in a sense that $e_(i+1)$ is *a* next step of $p$. However, this definition fails to capture the semantics of concurrent systems, where multiple _correct_ linearizations and thus orderings are possible. 
+Given a full execution trace $t = e_1 arrow ... arrow e_n$ of length $n$ and let $p = e_1 arrow ... arrow e_i$ with $i < n$ be a finite prefix of $t$, the next event might seem to simply be $e_(i+1)$. This notion is certainly correct in the sense that $e_(i+1)$ is *a* next step of $p$. However, this definition fails to capture the semantics of concurrent systems, where multiple _correct_ linearizations and thus orderings are possible. 
 
 We build upon the example from #link(<introduction>)[the Introduction]: 
 
@@ -142,7 +142,7 @@ and
 
 $ #[`Start`] -> #[`Produce`] B -> #[`Produce`] A -> #[`Combine`] A and B$
 
-can be deemed _correct_. Given the first trace is then later extracted from the system, the second one should still not be deemed incorrect - as we do not want to care about the order of causally unrelated events.
+can be deemed _correct_. Given that the first trace is then later extracted from the system, the second one should still not be deemed incorrect - as we do not want to care about the order of causally unrelated events.
 Importantly though, 
 
 $ #[`Start`] -> #[`Combine`] A and B -> #[`Produce`] A -> #[`Produce`] B$
@@ -210,13 +210,13 @@ While using Long Short-Term-Memory models (LSTMs), a special version of recurren
 
 === Transformer Architecture
 
-First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250,000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for the use in Large Language Models (LLMs), that power platforms like ChatGPT @chatgpt-is-transformer.
+First presented in @attention, this deep-learning based model architecture revolutionized its field, with now more than 250,000 direct citations #footnote[Based on Google Scholar, accessed June 2026]. Originally intended for language translation, it is now most known for use in Large Language Models (LLMs) that power platforms like ChatGPT @chatgpt-is-transformer.
 
-The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: the `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used a `Decoder`-only architecture @gpt-1 @gpt-2, as it is focused on next token generation only. 
+The following section will provide a technical overview of the architecture as presented in the original paper. The transformer can generally be split into two parts: the `Encoder` and the `Decoder`, whereas the former focuses on creating a _contextual understanding_ of input data and the latter is responsible for _generating output_ sequences based on previous output and the understanding of the `Encoder`. Nowadays often only one of the two structures is used, e.g. BERT only uses an `Encoder` layer to learn text representations @bert, while GPT and GPT-2 both used a `Decoder`-only architecture @gpt-1 @gpt-2, as they are focused on next token generation only. 
 
 As our goal of next-event prediction requires us to generate new steps, our model can be a `Decoder`-only network as well. We will therefore focus on presenting the architecture structure of that submodule.
 
-The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum number of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a trainable linear layer, essentially the index of the tokens in the vocabulary to the lower dimension, _embedding_ it.
+The first step is to convert the input sequence tokens to vectors of size $d_("model")$. With a context window size $d_("ctx")$, which is the maximum number of tokens processed at the same time by the model, this conversion translates our sequence of tokens into a two-dimensional tensor of size $d_("model") times d_("ctx")$. This transformation is performed by a trainable linear layer, essentially mapping the index of the tokens in the vocabulary to the lower dimension, _embedding_ it.
 Both $d_("model")$ and $d_("ctx")$ are _hyperparameters_ of the architecture, as are further variables written as $d_("param")$, which must be chosen before training.
 
 Next follows a _positional encoding_, where fixed geometrically decreasing frequencies are added to the input embeddings to encode the position of the token within the sequence. As no further weight is given to the explicit original sequence order in the following steps, this encoding provides the only way to distinguish two tokens' distance in the upcoming layers. 
@@ -232,7 +232,7 @@ This computation can be intuitively understood as follows.
 1. Combining $Q_i$ and $K_i$: $Q_i$ represents a certain learned query, essentially encoding which part of the embedding is interested in getting certain information of other tokens. $K_i$ highlights positions in the embedding, that match this information of the query $Q_i$. By multiplying them, one combines the interested embedding with the tokens that contain information.
 2. Lowering the magnitude of the values in the combined matrix by dividing by $sqrt(d_k)$, such that the $"softmax"$ function has smoother gradients. 
 3. Masking out all fields that try to let tokens refer to tokens after them, by setting the matrix upper right diagonal to $- infinity$.
-4. $"softmax"$ itself performs a rowwise normalization, such that all rows represent a random distribution, i. e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
+4. $"softmax"$ itself performs a rowwise normalization, such that all rows represent a random distribution, i.e. summing up to 1 while keeping the relative magnitude information. Values of $- infinity$ result in $0$.
 5. Multiplying by $V_i$: $V_i$ contains the embedding of the information that is present, if the query and key match. Thus, the multiplication linearly scales that information within the embedding.
 
 The resulting matrices are of the shape $d_("ctx") times d_v$. They are now concatenated into one $h dot d_("ctx") times d_v$ matrix and multiplied by a last parameter matrix $W^O in RR^(h d_v times d_("model"))$.
@@ -273,7 +273,7 @@ For our Fischertechnik APS, we need to provide our encoding of the Heraklit step
 
 In case parameters are necessary, we considered two approaches. Parameters can be encoded into a sequence of tokens, creating special meta-tokens to describe the start and end of parameter sequences. The sequence of tokens to encode our starting example of start of the production of a product `A` with quantity `3` could be encoded as the input sequence [`Produce`, `ParamStart`, `A`, `3`, `ParamEnd`]. The model would then need to learn the semantics of the parameter sequence, which could be difficult for larger parameter sets, also ensuring a complete parameterization and correct order of parameters depending on the step. Formally, a step `S` with parameters $p_1, ..., p_n$ is then represented as a sequence of tokens [`S`, `ParamStart`, $p_1$, ..., $p_n$, `ParamEnd`], where the order of parameters is fixed based on the step.
 
-Alternatively, parameters can be represented by creating multi-dimensional input- and output tokens that are parsed as parameters. Latter approach could be implemented by multiple parallel inputs, where each parameter type sits at a fixed input position, which is zero-padded if not used for a specific action. Here, the upper example could be represented by a tuple of the form (`Produce`, `A`, `3`), where the first element is the action and the following elements are the parameters. 
+Alternatively, parameters can be represented by creating multi-dimensional input- and output tokens that are parsed as parameters. The latter approach could be implemented by multiple parallel inputs, where each parameter type sits at a fixed input position, which is zero-padded if not used for a specific action. Here, the upper example could be represented by a tuple of the form (`Produce`, `A`, `3`), where the first element is the action and the following elements are the parameters. 
 
 This approach only works with a small number of different parameters over different steps, as we need to be able to represent all possible parameters of all possible steps in the same vector space. For example, if `Produce` has two distinct parameter types, one for the item and one for the item parameter, and `Combine` has two distinct parameter types, our complete input to our model would always need to be a tuple of the form (`Step`, `ProduceItem`, `ProduceQuantity`, `CombineParam1`, `CombineParam2`) independent of the specific step, where the last two elements are zero-padded for all steps that are not `Combine`. 
 

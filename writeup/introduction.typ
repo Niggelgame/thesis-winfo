@@ -25,7 +25,7 @@ $#[`Combine`] A and B -> #[`Produce`] A -> #[`Produce`] B$
 
 is not feasible, as one cannot combine non-existing products. 
 
-In this work, we present an approach to use transformer networks to solve the next event prediction problem, while working around the concurrency uncertainty by modeling it using the Heraklit infrastructure @heraklit. 
+In this work, we present an approach to use transformer networks to solve the next-event prediction problem, while working around the concurrency uncertainty by modeling it using the Heraklit infrastructure @heraklit. 
 
 // Heraklit provides a well-defined process semantics, especially regarding the comparison of process runs by 
 
