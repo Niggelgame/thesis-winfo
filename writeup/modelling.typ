@@ -62,7 +62,7 @@ Next we will look at the individual process module actions.
 
 == HBW
 
-The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage, and of dropping workpieces from storage onto the AGV. 
+The High-Bay Warehouse actions only consist of picking up workpieces from the AGV and putting them into storage and of dropping workpieces from storage onto the AGV. 
 
 These might seem like actions that require a lot of control, first due to needing to select what workpiece should be extracted from storage, and second due to storage management itself.
 
@@ -91,7 +91,7 @@ These runs are exemplary for all module `Pick` and `Drop` runs, as they always f
 
 The DPS is responsible for the insertion of pieces into the factory and shipping them out of the factory. The piece insertion into the factory is represented by a `DPS Drop`, dropping the workpiece onto the AGV from the loading bay. The shipping out of the factory is represented by `DPS Pick`, picking the workpiece up from the AGV and dropping it off at the loading bay. 
 
-Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similar to the physical actuator control done by the Siemens SPS, we choose not to model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
+Both actions are reading and writing to the NFC tag on the workpiece, if present, providing a history of the piece across the factory. Similarly to the physical actuator control done by the Siemens SPS, we choose not to model the NFC tag explicitly, as the prediction will be on a higher level of abstraction. Thus, we can again re-use the template for Picking and Dropping given in the templates in @pick-steps-template and @drop-steps-template.
 
 Notably, the `DPS Drop` step is the only step that can introduce a new workpiece into the factory. New workpieces are generally first stored into the HBW and then extracted again with an order, even if an order for that piece is already present. 
 
@@ -113,7 +113,7 @@ Additionally, this is the first module to perform a certain module-specific acti
 
 Both of these properties can be re-discovered in the following module-specific step-definitions.
 
-While there is a parameter for the drilling duration defined for each workpiece color, we decide to not model it for two reasons. First, the parameter is constant and thus just belongs directly to the drilling operation of that color. Second, even assuming it was not constant, there is no causal relationship to be learned as to why the duration should be different. The Fischertechnik APS provides no simulated tool wear or different operation durations for simulated broken or working workpieces.
+While there is a parameter for the drilling duration defined for each workpiece color, we decide to not model it for two reasons. First, the parameter is constant and thus just belongs directly to the drilling operation of that color. Second, even assuming it was not constant, there is no causal relationship to be learned as to why the duration should be different. The Fischertechnik APS provides no simulated tool wear or different operation durations for simulated broken or intact workpieces.
 
 We again provide a successful run in @drill-drill-run and a failed run in @drill-drill-run-failure, composed of:
 
@@ -144,7 +144,7 @@ Besides the `Pick` and `Drop` steps, the AIQS needs to perform this quality chec
 
 #include "figures/aiqs/steps_check_quality.typ"
 
-In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds to base its decision on. 
+In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds upon which to base its decision. 
 
 We will later see that this results in missed accuracy of our prediction model.
 
@@ -156,7 +156,7 @@ A composed success run of the AIQS can be seen in @aiqs-check-run, the failure i
 
 == CCU
 
-The CCU is the heart of the factory. It controls the interactions between the modules, taking the decisions on where the AGV should go and interacting with the factory order system via the UI.
+The CCU is the heart of the factory. It controls the interactions between the modules, making the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
 Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, are *implicit* or *invisible* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
 This means that the CCU steps will and cannot be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
@@ -165,7 +165,7 @@ For a potential synthetic generation of runs modeling the different variations o
 
 #include "figures/direct_connect_drill_mill.typ"
 
-This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with increases in modules, and again exponential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
+This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with an increasing number of modules, and again exponential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
 
 We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all processing parts of a singular workpiece are always only present in one processing module's action, these actions do not need to be able to run concurrently. 
 

@@ -70,7 +70,7 @@ Module Composition holds two important properties:
 - *Associativity*: Let $A, B, C$ be modules. Then $(A bullet B) bullet C = A bullet (B bullet C)$. This property allows us to ignore the brackets in composition, and merge multiple submodules in arbitrary orders.
 - *Commutativity* without shared gates: Let $A, B$ be modules. $A bullet B = B bullet A$ iff $A$ and $B$ share no equal interface labels. This will be of high interest when composing modules without causal relationships. Their interface would not share any labels, so the order of their composition also does not matter.
 
-Note how in #ref_def("Module") there is no notion of any dynamics yet. Heraklit follows the idea of Petri nets to model the dynamics, so we will now refine our definitions to separate the graph nodes into alternating _places_ and _transitions_.
+Note how in #ref_def("Module"), there is no notion of any dynamics yet. Heraklit follows the idea of Petri nets to model the dynamics, so we will now refine our definitions to separate the graph nodes into alternating _places_ and _transitions_.
 
 #definition("Net Graph")[
   Let $G = (V, E)$ be a graph, and let $P$ and $T$ be two disjoint sets with elements called _places_ and _transitions_, respectively, such that:
@@ -120,11 +120,11 @@ This concludes the most necessary basic Heraklit concepts necessary for our appr
 
 == Process Prediction
 
-Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensor data, can also be attached to an event.
+Modern enterprise systems collect huge amounts of data of process executions in so-called *event logs*. The event log of just one execution of such a process is called a *trace*. Each event in these logs contains at least an _identifier_ to distinctly identify the process execution, and an _event name_ describing the action and some sort of _ordering_ to express the sequence of events, mostly timestamps and execution times. Additional metadata, such as involved resources, machines or sensor data, can also be attached to an event.
 
 Process prediction is concerned with predicting *possible outcomes* of ongoing traces. This prediction can be performed online, meaning while the execution of the process happens, such that unwanted outcomes can be prevented by preemptively changing the execution based on the prediction. 
 
-Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or fine-grained information, such as the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @procmining16.
+Predictions are thus performed on incomplete traces, providing potential outcomes as outputs. The to-be-predicted outcomes are determined by the business problem at hand. They can be broad information about the full process execution such as expected remaining process execution time or whether the process will fail or succeed in its action, or fine-grained information, such as predicting the next possible event or detecting anomalies within events @fettke-deep-learning-proc-pred @procmining16.
 
 In this work, we will focus on predicting the next event of a process.
 
@@ -169,7 +169,7 @@ We can examine these definitions on our example from above by defining the follo
 
 #include "figures/theory/steps_sample.typ"
 
-To keep it simple, the labels of the step modules are the same as the labels of the transitions contained within them. The transitions on the left and right on the edge of the module border are the left and right interfaces, respectively. By the layout of the steps, one can already grasp as to how valid runs could look. 
+To keep it simple, the labels of the step modules are the same as the labels of the transitions contained within them. The transitions on the left and right on the edge of the module border are the left and right interfaces, respectively. By the layout of the steps, one can already grasp how valid runs could look. 
 
 By our definitions of composition, we already know that 
 
@@ -223,7 +223,7 @@ Next follows a _positional encoding_, where fixed geometrically decreasing frequ
 
 The now properly embedded sequence is now passed through $d_("layer")$ repetitions of the transformer blocks. They each again consist of three sublayers, each connected by a layer normalization. Assuming input $x$ to a sublayer and $"Sublayer"(x)$ the function performed by the sublayer, the output is $"LayerNorm"(x + "SubLayer"(x))$, to keep the output stable without any unexpected outliers complicating the gradient descent during training.
 
-Two of the sublayers are _Multi-Head Attention Layers_. Here, the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V in RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The results are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
+Two of the sublayers are _Multi-Head Attention Layers_. Here, the current embedding is first multiplied by $d_h dot 3$ linearly learnable parameter matrices $W_i^Q, W_i^K in RR^(d_("model") times d_k)$ and $W_i^V in RR^(d_("model") times d_v)$ with $1 <= i <= d_h$. The results are triples of the form $(Q_i, K_i, V_i)$. In more optimal implementations, this computation does not need to perform $3 dot d_h$ matrix multiplications, but is instead combined into one larger matrix multiplication. The triples are fed into the _scaled dot-product attention mechanism_, defined as
 
 #align(center)[$"Attention"(Q_i, K_i, V_i) = "softmax"("mask"(Q_i K_i^T)/(sqrt(d_k))))V_i$]
 
@@ -263,19 +263,19 @@ Our approach to use the transformer architecture therefore relies on training a 
 The transformer architecture matches the requirements of our process prediction problem on multiple levels. From a general perspective, it is designed to process and output sequences of elements, just as in process prediction past events are considered to predict future events. 
 The initial embedding of events from tokens to lower-dimensional vectors allows the model to learn a more compact representation of events, instead of relying on a one-hot encoding of tokens. This allows to keep the model size small even with a large number of different events, by embedding similar events into similar vectors.
 
-The characterizing attention mechanism allows the model to learn causal relationships between elements in the sequence. For the next event, relevant previous elements can be attended to, while irrelevant elements are ignored. This is especially important when modelling sequences that are only partially ordered, as in the case of concurrent systems. 
+The characterizing attention mechanism allows the model to learn causal relationships between elements in the sequence. For the next event, relevant previous elements can be attended to, while irrelevant elements are ignored. This is especially important when modeling sequences that are only partially ordered, as in the case of concurrent systems. 
 
 Additionally, the transformer architecture is highly scalable, from a small model with only a few layers and attention heads to represent a small process without parameters and few causal relationships, up to models with billions of parameters to represent highly complex processes on huge datasets. Even though we are using our technique on an experimental scale, the scalability allows the model architecture to be applied to a wider range of process prediction problems.
 
 Finally, the output of the model includes the _probabilities_ of the different next tokens. One can either just choose the one with the highest probability, or sample off of the then provided distribution. The probabilities can also be used to express a confidence measure of the prediction, or to provide multiple possible next steps in case of non-deterministic processes.
 
-For our Fischertechnik APS, we are need to provide our encoding of the Heraklit steps into _tokens_. We choose to make *every possible step its own token*, as our case study does not require taking in parameters for steps. 
+For our Fischertechnik APS, we need to provide our encoding of the Heraklit steps into _tokens_. We choose to make *every possible step its own token*, as our case study does not require taking in parameters for steps. 
 
 In case parameters are necessary, we considered two approaches. Parameters can be encoded into a sequence of tokens, creating special meta-tokens to describe the start and end of parameter sequences. The sequence of tokens to encode our starting example of start of the production of a product `A` with quantity `3` could be encoded as the input sequence [`Produce`, `ParamStart`, `A`, `3`, `ParamEnd`]. The model would then need to learn the semantics of the parameter sequence, which could be difficult for larger parameter sets, also ensuring a complete parameterization and correct order of parameters depending on the step. Formally, a step `S` with parameters $p_1, ..., p_n$ is then represented as a sequence of tokens [`S`, `ParamStart`, $p_1$, ..., $p_n$, `ParamEnd`], where the order of parameters is fixed based on the step.
 
 Alternatively, parameters can be represented by creating multi-dimensional input- and output tokens that are parsed as parameters. Latter approach could be implemented by multiple parallel inputs, where each parameter type sits at a fixed input position, which is zero-padded if not used for a specific action. Here, the upper example could be represented by a tuple of the form (`Produce`, `A`, `3`), where the first element is the action and the following elements are the parameters. 
 
-This approach only works a small number of different parameters over different steps, as we need to be able to represent all possible parameters of all possible steps in the same vector space. For example, if `Produce` has two distinct parameter types, one for the item and one for the item parameter, and `Combine` has two distinct parameter types, our complete input to our model would always need to be a tuple of the form (`Step`, `ProduceItem`, `ProduceQuantity`, `CombineParam1`, `CombineParam2`) independent of the specific step, where the last two elements are zero-padded for all steps that are not `Combine`. 
+This approach only works with a small number of different parameters over different steps, as we need to be able to represent all possible parameters of all possible steps in the same vector space. For example, if `Produce` has two distinct parameter types, one for the item and one for the item parameter, and `Combine` has two distinct parameter types, our complete input to our model would always need to be a tuple of the form (`Step`, `ProduceItem`, `ProduceQuantity`, `CombineParam1`, `CombineParam2`) independent of the specific step, where the last two elements are zero-padded for all steps that are not `Combine`. 
 
 Formally, given the set of all steps $S = {s_1, s_2, ..., s_m}$ and parameters $p_(i, 1), ..., p_(i, k_i)$ for each step $s_i in S$, the final input vector would be of the form $(s_i, p_(1, 1), ..., p_(1, k_1), ..., p_(m, 1), ...,p_(m, k_m))$. For an individual step $s_i$, the input vector would be $(s_i, 0, ..., 0, p_(i, 1), ..., p_(i, k_i), 0, ..., 0)$. By sharing parameter positions across multiple steps, the dimensionality of the input vector can be reduced, however without enough parameter sharing, the sparsity of the input vector increases with the number of different steps and parameters. This approach is therefore not feasible for a large number of different steps with different parameter types, as the input vector would grow in size and sparsity.
 

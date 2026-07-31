@@ -5,7 +5,7 @@
 
 == Conclusion
 
-This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, in concurrent systems. This approach starts by modeling relevant events as Heraklit _steps_ @heraklit, which are then interpreted as _tokens_ for a modified transformer architecture by #prose([@attention]). 
+This thesis presents an approach to using the transformer deep learning architecture to perform predictive process monitoring, especially next-event prediction, in concurrent systems. This approach starts by modeling relevant events as Heraklit _steps_ @heraklit, which are then interpreted as _tokens_ for a modified transformer architecture based on #prose([@attention]). 
 
 To evaluate the approach, we introduce a _correctness_ measure of a prediction based on prefix runs. We rely on the Heraklit composition calculus to allow arbitrary ordering of causally unrelated events, while enforcing the order of causally related events. 
 
@@ -28,13 +28,13 @@ In the following section we want to highlight certain limitations and present re
 
 Our case study relies on a dataset of only 10 runs through the system. While the resulting performance from such a small dataset is impressive, the training data obviously did not catch all edge cases for the model to learn. More data can be extracted from the APS, and more complex scenarios can be reflected in the training data, such as parallel processing of multiple workpieces or multiple AGVs running in the same system, as highlighted in @extended-run.
 
-The dataset also did not contain the metadata from the raw MQTT messages, such as the `DUP` flag to identify resends of messages due to the QoS levels. This additional protocol information could make future data pre-processing more reliable.
+The dataset also did not contain the metadata from the raw MQTT messages, such as the `DUP` flag to identify retransmissions   of messages due to the QoS levels. This additional protocol information could make future data pre-processing more reliable.
 
 We did not focus on extracting the parameters for specific actions, such as the amount of time the MILL should perform its action. Adding these type of parameters to the modeling and encoding could open up the prediction of more fine-grained prediction within the APS. This is a clear limitation on what kind of processes can be modeled by the infrastructure at the moment, as parameters need to be included into the tokens directly. Adding byte-pair encoding instead of doing a 1-1 step to token mapping could simplify this in future work.
 
 We perform no comparison to other prediction model architectures, as this would be out of scope for this thesis. To clearly isolate the performance benefits coming from the transformer architecture, it remains to benchmark other, possibly simpler traditional machine learning models. Especially with the fundamental simplicity of the factory, traditional machine learning models could already perform quite well for limited scenarios.
 
-Some further actions on the basis of our model could be to
+Some further actions on the basis of our model could be to:
 
 - Extend our discrete pipeline into one continuous live algorithm, that can consume the live logs as an input and output concrete predictions as an output. This should be straightforward, as the singular steps of the pipeline already exist; however the current pipeline would need to be adjusted to combine all scripts into one module.
 - Focus on explainability of the model. During generalization testing, we realized that especially the last token has a big influence on the next predictions. An analysis to identify which parts of the sequence the model puts its _attention_ to would increase explainability, and thus trust in the model.

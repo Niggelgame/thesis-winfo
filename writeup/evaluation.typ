@@ -7,7 +7,7 @@ In this chapter we will first compare our prediction model with a random and an 
 
 == Baseline Comparisons<baseline>
 
-We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behavior we model, or from the perspective of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the singular workpiece perspective. 
+We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behavior we model, or from that of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the singular workpiece perspective. 
 
 Given by the data collection process, the runs produced as the validation data set are already provided from this perspective. Thus, it remains to check the predictions.
 
@@ -25,19 +25,19 @@ We therefore calculate the _accuracy_ over our validation set of runs $"val"$ as
 
 $A = 1/(|"val"|) sum_(R in "val") A_R$
 
-We still need to provide a baseline, so we measure the same metric on a random predictor, selecting a *random* next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
+We still need to provide a baseline, so we measure the same metric on a random predictor that selects a *random* next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-We also provide an *empirical* predictor $"predict"''(R, k)$, that processes the initial training data set and extracts the number of times a token appeared in the dataset. We then order the tokens by descending count and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
+We also provide an *empirical* predictor $"predict"''(R, k)$ that processes the initial training data set and extracts the number of times a token appeared in the dataset. We then order the tokens by descending count and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
 The random baseline is able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 
-Our model achieves an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process. This proves the model is learning about the sequential and causal relationships and not only mimicking the frequency of contributions.
+Our model achieves an accuracy of *91.07%*, highly outperforming the random and empirical baseline. This is a clear indicator that our model was able to learn properties the structure of our process. This proves the model is learning about the sequential and causal relationships and not only mimicking the frequency of step occurrences.
 
 It is notable that this accuracy is higher than the accuracy measured during training; we expected this behavior due to the disabled dropout layer during evaluation.
 
 === Top-K Next Step Check
 
-This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to be failing the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are both highly probable; the predictor has no way of knowing which one is correct.
+This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to fail the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are both highly probable; the predictor has no way of knowing which one is correct.
 
 We want to define a correctness measure that allows for lenience in the prediction due to the structure described above. Therefore, in the following, we check whether one of the top $k$ next step options ordered by their model output probability is correct instead of just the next step option with the highest probability.
 
@@ -75,7 +75,7 @@ We evaluate both sub-scenarios with $p$ starting from 0 and increasing in steps 
 
 For the first scenario the accuracy remains mostly stable, dropping slightly over the increasing $p$ from \~91% down to \~86%. The accuracy even slightly increases in some cases around $p = 0.3$. This can be explained by the amount of events inserted into the trace: The new events create a new context for the model, which leads to a correct prediction for the original unmodified prefix, under which the model has failed before. This progression is plotted in @p-progression on the left.
 
-The performance drop in the second scenario, inserting random events being possible at all positions, worsens the accuracy much more significantly, up to only \~*43.4%* with $p = 0.5$. The progression over increasing $p$ is plotted in @p-progression on the right.
+The performance drop in the second scenario, inserting random events being possible at all positions, worsens the accuracy much more significantly, down to only \~*43.4%* with $p = 0.5$. The progression over increasing $p$ is plotted in @p-progression on the right.
 
 
 #figure(caption: [Progression of accuracy over increasing insertion rate $p$], placement: none)[
@@ -138,7 +138,7 @@ The performance drop in the second scenario, inserting random events being possi
   #v(10pt)
 ]<p-progression>
 
-This suggests that the model highly depends on the last prefix event being the correct event to predict the next event. 
+This suggests that the model highly depends on the last prefix event being correct to predict the next event. 
 
 === Dropping Random Events
 
@@ -188,7 +188,7 @@ This run has certain properties our training runs do not have, that can have an 
 
 3. The model outputs `<EOS>` tokens when it reaches what it learned to be the end of a sequence and thus a run. In the training data, every run ends after processing one piece. Here, the `<EOS>` should only be output after the processing of multiple workpieces. This type of generalization cannot be expected from our model.
 
-Due to the set of training data sequences never containing such parallel scenarios, there is no proper workaround for the second and third issues. One could retrain a new model on training data containing such runs or split the traces into multiple separate traces and thus create scenarios known to our model. Splitting the traces by workpiece order could create traces from the perspective of individual workpieces, reducing the parallelism and ending individual sequences properly, which our model is capable of handling - we do not evaluate this in this thesis, as our preprocessing is not able to distinct different orders. The coloring issue could be resolved at the time by adding additional color meta-tokens by hand into the token sequence, which would, however, also require changes to our processing specific to this sample.
+Due to the set of training data sequences never containing such parallel scenarios, there is no proper workaround for the second and third issues. One could train a new model on training data containing such runs or split the traces into multiple separate traces and thus create scenarios known to our model. Splitting the traces by workpiece order could create traces from the perspective of individual workpieces, reducing the parallelism and ending individual sequences properly, which our model is capable of handling - we do not evaluate this in this thesis, as our preprocessing is not able to distinct different orders. The coloring issue could be resolved at the time by adding additional color meta-tokens by hand into the token sequence, which would, however, also require changes to our processing specific to this sample.
 
 The APS trace is processed following the same procedures for training and validation data as seen in @data-col-and-proc. We then perform the same evaluation baseline evaluations as before.
 
@@ -200,7 +200,7 @@ Thus, the accuracy, while seeming low, matches the expectations due to the limit
 
 == Model Performance
 
-Predictive process monitoring is mostly done for ongoing processes @ppm26, and possible in an completely online setting, predicting on data just as it arrives at the system. Latter scenario is especially relevant, if immediate feedback for ongoing processes or future processes is required.  Both the _resource requirements_ and the _amount of time_ required for singular predictions are important factors to consider when discussing online deployment. 
+Predictive process monitoring is mostly done for ongoing processes @ppm26, and is possible in an completely online setting, predicting on data just as it arrives at the system. Latter scenario is especially relevant, if immediate feedback for ongoing processes or future processes is required.  Both the _resource requirements_ and the _amount of time_ required for singular predictions are important factors to consider when discussing online deployment. 
 
 Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_//#note[final number!] 
 floating-point parameters, thus VRAM with a fully loaded model usage is limited as well.
