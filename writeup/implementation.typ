@@ -67,7 +67,7 @@ The two tokenized trace sets are then written to two files. We ensure that from 
 
 In #ref_def("Correct Prediction") we define what constitutes a correct prediction based on potential next steps (#ref_def("Next Step")). This definition, while easily understandable, has the caveat of not being written in a computationally simple way. 
 
-Following the definition directly, given a _reference_ Heraklit run, and a second _checker_ Heraklit run, to check whether the _checker_ run is a prefix of the _reference_ run, we would need to model all possible suffixes and then check whether they are equal. 
+Following the definition directly, given a _reference_ Heraklit run and a second _checker_ Heraklit run, to check whether the _checker_ run is a prefix of the _reference_ run, we would need to model all possible suffixes and then check whether they are equal. 
 
 However, by the composition calculus (#ref_def("Graph Composition")) we know that the two sequences of compositions are equal and represent the same run, if composition produces the same graph. Following from that, a _checker_ sequence of compositions is a prefix of a _reference_ sequence of compositions, if the composition graph of the _checker_ is a *graph prefix* of the _reference_ composition graph.
 
@@ -138,7 +138,7 @@ learning_rates = [3e-3, 1e-3]
 
 On each possible combinatorial set of parameters, we perform a *k-fold cross-validation*. This is a standard technique to avoid overfitting while just using training data. The data set is split into $k$ equally sized groups of data, the so-called _folds_, then we train the model $k$ times, always using $k-1$ folds for training, and one for validation. This technique is especially relevant for the small dataset we have, as we cannot be sure that a single random split properly distributes the data into fair training and validation sets. We chose `k = 4`.
 
-During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model that has found good parameters early on, or such a bad model configuration, that training it further probably does not produce much of an impact either. 
+During this pre-training phase we train full models with the same number of _epochs_ as the final model. However, if a model does not show loss improvements after a number of predefined cycles of training (here: 8), we stop the model evaluation here. Models stopped in pre-training early either suggest a highly performing model that has found good parameters early on or such a bad model configuration, that training it further probably does not produce much of an impact either. 
 
 During cross-validation we also measure the performance of the combination of most probable 3 output tokens, producing higher `top_k` performance if any one of these top 3 tokens are correct. 
 

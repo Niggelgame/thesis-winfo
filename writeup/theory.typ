@@ -14,7 +14,7 @@ Heraklit @heraklit is a process modeling framework designed to thrive in a discr
 We will not provide an in-depth explanation of Heraklit, but will focus on an overview of the most important points relevant to this work. In general, Heraklit builds upon three main characteristics:
 
 - *Architecture*: Models can be composed and refined, allowing the building of large systems using the _composition calculus_.
-- *Dynamics*: Actions are performed using local state, and dynamics between actions using causal relationships.
+- *Dynamics*: Actions are performed using local state and dynamics between actions using causal relationships.
 - *Statics*: Items, data and operations on them are treated as first-class citizens.
 
 The _composition calculus_ of _modules_ and causal modeling are what mainly power our approach to process prediction. To understand how they formally work, we will first define the Heraklit notions of some of the terms, including *interface* and *module*, *composition of modules* and a *step module*. These definitions are based on definitions found in  @heraklit @compositionheraklit. Due to the limited scope of the thesis and the limited requirements of Heraklit in our use case, definitions are not necessarily complete and proofs are left out. They can be read up on in @heraklit.
@@ -243,7 +243,7 @@ After the transformer blocks, we need to extract the next token. Similarly to th
 
 #line()
 
-We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource consumption should operate on a scale that is not a concern for us in the first place. 
+We acknowledge that there are further optimizations to this architecture since the original release, mostly on performance and resource usage @transformer-opt-cache, and that there are multiple adaptions to other domains, such as image processing @image-transformer. Due to our limited dataset and resulting small parameter set, model performance and resource consumption should operate on a scale that is not a concern for us in the first place. 
 
 === Model Training
 
@@ -261,7 +261,7 @@ Some approaches to apply the transformer architecture rely on natural language t
 Our approach to use the transformer architecture therefore relies on training a _smaller_#footnote[Compared to a typical natural language model by the number of learnable parameters] model following the original transformer architecture from scratch. 
 
 The transformer architecture matches the requirements of our process prediction problem on multiple levels. From a general perspective, it is designed to process and output sequences of elements, just as in process prediction past events are considered to predict future events. 
-The initial embedding of events from tokens to lower-dimensional vectors allows the model to learn a more compact representation of events, instead of relying on a one-hot encoding of tokens. This allows to keep the model size small even with a large number of different events, by embedding similar events into similar vectors.
+The initial embedding of events from tokens to lower-dimensional vectors allows the model to learn a more compact representation of events, instead of relying on a one-hot encoding of tokens. This allows to keep the model size small, even with a large number of different events, by embedding similar events into similar vectors.
 
 The characterizing attention mechanism allows the model to learn causal relationships between elements in the sequence. For the next event, relevant previous elements can be attended to, while irrelevant elements are ignored. This is especially important when modeling sequences that are only partially ordered, as in the case of concurrent systems. 
 
