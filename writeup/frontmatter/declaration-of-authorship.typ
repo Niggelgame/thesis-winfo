@@ -6,7 +6,7 @@
   grid(
     columns: (auto, auto),
     align(left)[
-      #city, 31. Juli 2026
+      #city, 03. August 2026
       #h(12pt)
     ],
     align(right)[
@@ -21,7 +21,7 @@
   date: none,
   name: "",
 ) = {
-  set heading(outlined: false)
+  set heading(outlined: false, numbering: none)
 
   page(
     footer: [],

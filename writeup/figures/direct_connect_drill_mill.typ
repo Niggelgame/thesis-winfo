@@ -28,18 +28,18 @@
       "bg.north-east", 
       anchor: "north-east", 
       padding: 0.2, 
-      text(size: 11pt)[step *direct mill to drill*]
+      text(size: 11pt)[step *direct drill to mill*]
     )
 
 
-    content((start-x, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Finish \ MILL \ Drop])
+    content((start-x, 0), name: "place1", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Finish \ DRILL \ Drop])
 
 
-    content((9,0), name: "step3", frame: "rect", fill: white, stroke: 2pt, padding: 0.4, align(center)[MILL then \ DRILL])
+    content((9,0), name: "step3", frame: "rect", fill: white, stroke: 2pt, padding: 0.4, align(center)[DRILL then \ MILL])
 
     // 5. OUTPUTS (Right Edge)
     // Placed at X = end-x so they straddle the right border perfectly
-    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Start \ DRILL \ Pick])
+    content((end-x, 0), name: "out3", frame: "circle", fill: white, stroke: 2pt, padding: 0.2, align(center)[Start \ MILL \ Pick])
 
     // 6. EDGES
     // Connect any named node to any other named node

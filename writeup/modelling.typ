@@ -6,7 +6,7 @@
 
 This section marks the beginning of our case study, showcasing the approach of using Heraklit and the Transformer architecture to perform next-step process prediction.
 
-We want to evaluate our process prediction technique on the Fischertechnik *Agile Production Simulator* @fischertechnik. As required by our definition of what a correct prediction is (#ref_def("Correct Prediction")), we will first need to translate events of the APS into Heraklit @heraklit steps. These steps should crucially allow the modeling of concurrency within the system by only modeling the causal relationships of events.
+We want to evaluate our process prediction technique on the Fischertechnik *Agile Production Simulation* @fischertechnik. As required by our definition of what a correct prediction is (#ref_def("Correct Prediction")), we will first need to translate events of the APS into Heraklit @heraklit steps. These steps should crucially allow the modeling of concurrency within the system by only modeling the causal relationships of events.
 
 While some domain knowledge is necessary for this step, still only step modules need to be created, not full system process models. As these steps are predicted by our technique, having a clear understanding of what each step represents is useful during further evaluation.
 
@@ -56,7 +56,7 @@ All other modules need to physically interact with the remaining factory by pick
 
 Two points should be highlighted:
 1. We are modeling failure modes. In case the action fails, the respective `Pick Failed` or `Drop Failed` can be composed instead of the `Picked` or `Dropped` successful counterpart.
-2. The AGV is not able to move while the picking or dropping action is performed, as it consumes the token at `AGV at MOD` token.
+2. The AGV is not able to move while the picking or dropping action is performed, as it consumes the token at `AGV at MOD`.
 
 Next we will look at the individual process module actions.
 
@@ -80,7 +80,7 @@ A successful HBW pick run can be seen in @pick-hbw-run, a failed HBW pick in @pi
 #include "figures/hbw/run_pick_fail.typ"
 
 
-They are clearly defined by composing the singular pick steps:
+They are clearly defined by composing the single pick steps:
 
 $&#[*HBW Pick success*] &= &#[*HBW Pick*] bullet #[*HBW Picked*] \
 &#[*HBW Pick failure*] &= &#[*HBW Pick*] bullet #[*HBW Pick Failed*]$
@@ -144,7 +144,7 @@ Besides the `Pick` and `Drop` steps, the AIQS needs to perform this quality chec
 
 #include "figures/aiqs/steps_check_quality.typ"
 
-In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other pieces are processed based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece currently "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds upon which to base its decision. 
+In the Fischertechnik APS, only the AIQS is concerned with the failure of a piece, all other modules are processing based on just the color. This makes the behavior of the next step after a started quality check hard to predict: The piece must either fail or pass, but the previous process execution provides no indication of whether the workpiece currently "processed" will result in a failure or not. This is a shortcoming in the simulation of the APS, as especially tool wear and processing durations could be exploited to simulate a failing processing module on a piece, such that a prediction has some grounds upon which to base its decision. 
 
 We will later see that this results in missed accuracy of our prediction model.
 
@@ -159,15 +159,15 @@ A composed success run of the AIQS can be seen in @aiqs-check-run, the failure i
 The CCU is the heart of the factory. It controls the interactions between the modules, making the decisions on where the AGV should go and interacting with the factory order system via the UI.
 
 Our goal is to model the steps extractable from the Fischertechnik MQTT Logs. These control steps, deciding what module action happens after the next, are *implicit* or *invisible* control. There is no control action token to be found in the MQTT logs that clearly defines _after action X perform action Y_, the control can just be inferred from the interactions between the modules. 
-This means that the CCU steps will and cannot be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
+This means that the CCU steps will not and cannot be present in the prediction tokens, as they do not exist within the logs. However, we still need to model some control system, as the steps of different modules are not composable at the moment.
 
-For a potential synthetic generation of runs modeling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modeling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `MILL` step to the `DRILL` step.
+For a potential synthetic generation of runs modeling the different variations of runs, e.g. depending on the color of the workpiece, one could argue that these control steps must be meticulously designed, including the order of stations per workpiece type. This would imply pre-modeling a specific order of module actions into the steps via the connecting places. An example can be seen in @direct-connect-drill-mill-step. Here we provide the fixed connection of a `DRILL` step to the `MILL` step.
 
 #include "figures/direct_connect_drill_mill.typ"
 
-This approach has multiple downsides. We trade the increased detail for *decreased flexibility*, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with an increasing number of modules, and again exponential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
+This approach has multiple downsides. We trade *decreased flexibility* for increased detail, as changes in the configuration for certain workpieces would require a new Heraklit step model. More importantly though, the tools to validate model outputs would need to be capable of handling an *exponential number of steps* to support all different process configurations, with an increasing number of modules, and again exponential growth with length of runs. This is due to these control steps not being present within the logs, so all matching control steps must be tried to be appended at any point of the validation, creating a huge search tree for validation.
 
-We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a singular workpiece. Since all processing parts of a singular workpiece are always only present in one processing module's action, these actions do not need to be able to run concurrently. 
+We therefore decide not to model all the configurations explicitly. Instead, we only restrict our model to allow one module action to take place at a time. While this might seem counter-intuitive when looking at the distributed factory setting, here we are only looking at the factory execution from the perspective of a single workpiece. Since all processing parts of a single workpiece are always only present in one processing module's action, these actions do not need to be able to run concurrently. 
 
 Technically, this restriction is applied by creating a global shared place called `Next Module Ready`. Whenever a module wants to start, it needs to consume this place, whenever it is finished, it will fill the place again. Following the example from before, this creates the new steps in @implicit-connect-drill-mill. 
 

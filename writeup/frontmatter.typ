@@ -1,5 +1,4 @@
 #import "frontmatter/titlepage.typ": *
-#import "frontmatter/declaration-of-authorship.typ": *
 #import "frontmatter/outline.typ": *
 
 #let default-frontmatter(
@@ -31,12 +30,6 @@
   page(margin: 0pt, image(width: 100%, height: 100%, "deckblatt.pdf"))
 
   pagebreak(weak: true, to: "odd")
-
-  declaration-of-authorship(
-    city: city,
-    date: date,
-    name: author,
-  )
 
   counter(page).update(1)
 

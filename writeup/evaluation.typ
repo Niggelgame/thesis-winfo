@@ -7,9 +7,9 @@ In this chapter, we will first compare our prediction model with a random and an
 
 == Baseline Comparisons<baseline>
 
-We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behavior we model, or from that of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the singular workpiece perspective. 
+We want to predict the next step of the APS process, which is processing a single workpiece. One can understand this as predicting the next step from the perspective of the CCU, as the CCU controls the full behavior we model, or from that of the workpiece, as we mostly predict actions only concerned with work on this workpiece. One exception to the last point is given by potential movement of the AGV while the workpiece is processed. This step is valid, but not relevant for the single workpiece perspective. 
 
-Given by the data collection process, the runs produced as the validation data set are already provided from this perspective. Thus, it remains to check the predictions.
+Given by the data collection process, the runs produced as the validation dataset are already provided from this perspective. Thus, it remains to check the predictions.
 
 In the following we will refer to our model as a function $(n_1, ..., n_k) = "predict"(P, k)$, where $P$ is a run prefix and $k$ is the number of best next steps options after $P$ that the model should output, ordered by their probability.
 
@@ -27,7 +27,7 @@ $A = 1/(|"val"|) sum_(R in "val") A_R$
 
 We still need to provide a baseline, so we measure the same metric on a random predictor that selects a *random* next step $"predict"'(R, k)$, drawing $k$ distinct steps from the set of possible steps. 
 
-We also provide an *empirical* predictor $"predict"''(R, k)$ that processes the initial training data set and extracts the number of times a token appeared in the dataset. We then order the tokens by descending count and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training data set the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
+We also provide an *empirical* predictor $"predict"''(R, k)$ that processes the initial training dataset and extracts the number of times a token appeared in the dataset. We then order the tokens by descending count and predict the first $k$ tokens, which are the $k$ tokens that appeared in the training dataset the most. If there are multiple tokens with the same count that, sampled, would lead to more than $k$ predictions, we again randomly sample from that group.
 
 The random baseline is able to achieve an accuracy of *1.79%*, meaning 1.79% of next steps were predicted correctly. The empirical baseline achieves an accuracy of *5.36%*.
 
@@ -37,13 +37,13 @@ It is notable that this accuracy is higher than the accuracy measured during tra
 
 === Top-K Next Step Check
 
-This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to fail the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are both highly probable; the predictor has no way of knowing which one is correct.
+This scenario tries to adapt to an issue found in the Fischertechnik APS simulation control: Some next steps are basically unpredictable based just on the previous execution, leaving multiple options. One highlighted example from before is the quality control. The APS does not change its behavior if the processed workpiece is destined to fail the quality control. Thus, the predictor also cannot catch any special structure pointing towards a failure. The decision of the next step at this position can be described as non-determinism. This means that after the quality control has started, both the quality control success and failure steps are highly probable; the predictor has no way of knowing which one is correct.
 
 We want to define a correctness measure that allows for lenience in the prediction due to the structure described above. Therefore, in the following, we check whether one of the top $k$ next step options ordered by their model output probability is correct instead of just the next step option with the highest probability.
 
-We can simply adapt our definitions from the previous scenario to predict the $k$ most probable next steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$. We then change the correctness measure to deem a prediction correct, if at least one option is a correct prediction, formally if $or.big_(j = 1)^k (n_(i,j) = s_(i+1))$, we set $c_i = 1$, else $c_i = 0$. The accuracy measure calculations on the correctness remain the same.
+We can simply adapt our definitions from the previous scenario to predict the $k$ most probable next steps at each prefix $n_(i,1), ..., n_(i, k) = "predict"(P_i, k)$. We then change the correctness measure to deem a prediction correct if at least one option is a correct prediction, formally if $or.big_(j = 1)^k (n_(i,j) = s_(i+1))$, we set $c_i = 1$, else $c_i = 0$. The accuracy measure calculations on the correctness remain the same.
 
-With $k=2$, we can observe a top-2 accuracy of *our model* of *100%*. The _random_ baseline only predicts the top-2 events correctly with an accuracy of *5.36%*, the _empirical_ baseline has a *10.71%* accuracy.
+With $k=2$, we can observe a top-2 accuracy for *our model* of *100%*. The _random_ baseline only predicts the top-2 events correctly with an accuracy of *5.36%*, the _empirical_ baseline has a *10.71%* accuracy.
 
 To put the prediction performance of our model into context, even with $k=10$, the random baseline only achieves an accuracy of 21.4%, the empirical baseline 57.14%. 
 
@@ -57,11 +57,11 @@ Our general baseline evaluation cases in @baseline are measured on traces not se
 We specifically want to focus on potential issues related to the transmission noise during the transmission of events to the predictor. This could be in the form of highly delayed messages arriving at an unexpected time or messages that are dropped and not received properly. Since the APS is a networked system, dropped or late messages are to be expected, thus robustness when dealing with such symptoms is desired.//#note[Duplicate scenario?] 
 We will evaluate these two scenarios on our model by introducing synthetic noise in the described forms into the prefix runs passed to our model, comparing the resulting accuracy with the accuracy from our baseline.
 
-An additional experimental evaluation to test our generalization performance is to extrapolate the type of runs we see in the training data. Instead of just processing a singular workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing multiple workpieces at once.
+An additional experimental evaluation to test our generalization performance is to extrapolate the type of runs we see in the training data. Instead of just processing a single workpiece in one sequence, we perform a short analysis to see how our model performs on one long run processing multiple workpieces at once.
 
 === Additional Random Events
 
-To simulate the arrival of highly delayed messages, we will insert random events into the prefix traces. The number of insertions is controlled by a parameter $p$, describing the ratio of number of newly inserted events to the size of the prefix event sequence. For example, with a trace prefix of length 10 and $p = 0.2$, we would insert 2 random events at random positions into the prefix trace. The random events are drawn from the set of all possible events with replacement.
+To simulate the arrival of highly delayed messages, we will insert random events into the prefix traces. The number of insertions is controlled by a parameter $p$, describing the ratio of the number of newly inserted events to the size of the prefix event sequence. For example, with a trace prefix of length 10 and $p = 0.2$, we would insert 2 random events at random positions into the prefix trace. The random events are drawn from the set of all possible events with replacement.
 
 To validate the correctness of the predicted step, we append the predicted next step to the _original prefix_ and check this for correctness.
 
@@ -175,13 +175,13 @@ By dropping $p$ parts of the run, except the last event, the accuracy only reduc
   )
 ]<p-dropout>
 
-The reduced rate of accuracy rate points towards good generalization capabilities of the model when dealing with message drops. 
+The reduced rate of accuracy points towards good generalization capabilities of the model when dealing with message drops. 
 
 === Extended Input Run<extended-run>
 
-The training data just contains traces of the APS, for which one workpiece was processed at a time, from entering the factory at the DPS, up to failing at the AIQS or being dropped off for delivery at the DPS again. We now predict on a singular additional recorded trace, for which nine workpieces are passed into the factory directly after each other, with the orders starting to be processed directly. It consists of 180 steps in total, averaging 20 steps per workpiece.
+The training data just contains traces of the APS, for which one workpiece was processed at a time, from entering the factory at the DPS, up to failing at the AIQS or being dropped off for delivery at the DPS again. We now predict on a single additional recorded trace, for which nine workpieces are passed into the factory directly after each other, with the orders starting to be processed directly. It consists of 180 steps in total, averaging 20 steps per workpiece.
 
-This run has certain properties our training runs do not have, that can have an impact on the prediction quality:
+This run has certain properties our training runs do not have that can have an impact on the prediction quality:
 
 1. The run contains workpieces of multiple colors. Remember that we use special _meta_ color tokens to let the model know what kind of workpiece is processed in this sequence (see @model-architecture). Usually, this token is automatically prepended based on the trace metadata containing the color. Thus, our automatic preprocessing cannot handle the color changes in between the workpiece processes.
 
@@ -191,7 +191,7 @@ This run has certain properties our training runs do not have, that can have an 
 
 Due to the set of training data sequences never containing such parallel scenarios, there is no proper workaround for the second and third issues. One could train a new model on training data containing such runs or split the traces into multiple separate traces and thus create scenarios known to our model. Splitting the traces by workpiece order could create traces from the perspective of individual workpieces, reducing the parallelism and ending individual sequences properly, which our model is capable of handling - we do not evaluate this in this thesis, as our preprocessing is not able to distinguish between different orders. The coloring issue could be resolved at the time by adding additional color meta-tokens by hand into the token sequence, which would, however, also require changes to our processing specific to this sample.
 
-The APS trace is processed following the same procedures for training and validation data as seen in @data-col-and-proc. We then perform the same evaluation baseline evaluations as before.
+The APS trace is processed following the same procedures for training and validation data as seen in @data-col-and-proc. We then perform the same baseline evaluations as before.
 
 For simple next step prediction, our model has an accuracy of *45.25%*. Looking at the incorrect predictions, \~10% incorrectly assumed `<EOS>` matching our expectation from 3.
 In an additional \~25% the model failed to predict additional AGV movements never seen in that context in the training data, and \~33% originate from the repeated picks and drops from the DPS and the HBW, stemming from the insertion of additional workpieces into the factory. The remaining failures can be mostly attributed to unknown process configurations from missing color information, as the model incorrectly predicts the sequences of process modules.
@@ -201,12 +201,12 @@ Thus, the accuracy, while seeming low, matches the expectations due to the limit
 
 == Model Performance
 
-Predictive process monitoring is mostly done for ongoing processes @ppm26, and is possible in a completely online setting, predicting on data just as it arrives at the system. The latter scenario is especially relevant, if immediate feedback for ongoing processes or future processes is required.  Both the _resource requirements_ and the _amount of time_ required for singular predictions are important factors to consider when discussing online deployment. 
+Predictive process monitoring is mostly done for ongoing processes @ppm26, and is possible in a completely online setting, predicting on data just as it arrives at the system. The latter scenario is especially relevant if immediate feedback for ongoing processes or future processes is required.  Both the _resource requirements_ and the _amount of time_ required for single predictions are important factors to consider when discussing online deployment. 
 
 Resource requirements are a non-issue for our model. The prediction itself consumed at most 400MB of memory during longer-running benchmarks, with up to 60% single CPU usage and 5% GPU usage. Not using 100% of the CPU can be explained by offloaded work to the GPU, during which the CPU is not needed by the program. Our model only consists of _42466_//#note[final number!] 
 floating-point parameters, thus VRAM usage with a fully loaded model is limited as well.
 
-The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times, later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction; however, the current infrastructure does not provide the functionality for consistently keeping the model loaded.
+The individual prediction times amounted to an average of 40ms including reloading the model after each prediction. The first prediction requires loading the model from the filesystem, resulting in \~400ms loading times. Later predictions only reloading the model from mapped memory then average at only 34ms. These times can certainly be enhanced by not reloading the model after every prediction; however, the current infrastructure does not provide the functionality for consistently keeping the model loaded.
 
 Combining these two results, we can infer that online usage is certainly possible with this model, even though it would require some infrastructure build-up to support live translation of the MQTT events into the steps and pipelining that into the model.
 
